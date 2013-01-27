@@ -4,32 +4,76 @@ short M1 = 4;
 short E2 = 6;                      
 short M2 = 7;   
 
-short ST = 2;
+short ST = 8;
+
+#include <PinChangeInt.h> // necessary otherwise we get undefined reference errors.
+#include <AdaEncoder.h>
+
+int8_t clicks=0;
+long pos = 0;
+char id=0;
+
+char buf [20];
 
 signed int motorSpeed = 0;
 
-#include <Wire.h>
+#include <Encoder.h>
+
+Encoder encoder(10, 12);
 
 void setup()
 {
     Serial.begin(57600); 
-    Wire.begin();
     pinMode(M1, OUTPUT);   
     pinMode(M2, OUTPUT);  
     pinMode(E1, OUTPUT);   
     pinMode(E2, OUTPUT);   
     pinMode(ST, INPUT);   
+    
+    AdaEncoder::addEncoder('a', 2, 3);
 }
 
 void loop()
 {
+  encoder *thisEncoder;
   Serial.println("Hallo Welt!.");
   delay(3000);
   Serial.println("Calibrating...");
   delay(3000);
   Calibrate();
   Serial.println("Done.");
-  while(true);
+  
+  thisEncoder=AdaEncoder::genie(&clicks, &id);
+  
+  int oldPos = 0;
+  while(true)
+  {
+    thisEncoder=AdaEncoder::genie(&clicks, &id);
+    if (thisEncoder != NULL) {
+      pos += clicks;
+      if (clicks != 0)
+      {
+        Serial.println(pos);
+      }
+    }
+  }    
+    
+    /*
+    int i = digitalRead(Enc1);
+    int j = digitalRead(Enc2);
+    sprintf(buf, "%d %d", i, j);
+    Serial.println(buf);
+    */
+   
+   /* 
+    int newPos = encoder.read();
+    if (newPos != oldPos)
+    {
+      Serial.println(newPos);
+      oldPos = newPos;
+    }
+    */
+  }
 }
 
 void Calibrate()
@@ -52,6 +96,7 @@ void Calibrate()
   {
     ;
   }
+  encoder.write(0);
   }
   SetMotorSpeed(0);
 }
