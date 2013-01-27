@@ -1,25 +1,28 @@
+#include <Encoder.h>
+
 //Arduino PWM Speed Contro
-short E1 = 5;  
-short M1 = 4; 
-short E2 = 6;                      
-short M2 = 7;   
+#define E1 5  
+#define M1 4 
+#define E2 6                      
+#define M2 7
 
-short ST = 8;
+// Calibration sensor 
+#define ST 8
 
-#include <PinChangeInt.h> // necessary otherwise we get undefined reference errors.
-#include <AdaEncoder.h>
+// Encoders
+#define ENC1 2
+#define ENC2 3
 
-int8_t clicks=0;
-long pos = 0;
-char id=0;
+#define EPSILON 10
 
 char buf [20];
 
 signed int motorSpeed = 0;
+long pos = 0;
+long oldPos = 0;
 
-#include <Encoder.h>
 
-Encoder encoder(10, 12);
+Encoder myEncoder(ENC1, ENC2);
 
 void setup()
 {
@@ -29,13 +32,12 @@ void setup()
     pinMode(E1, OUTPUT);   
     pinMode(E2, OUTPUT);   
     pinMode(ST, INPUT);   
-    
-    AdaEncoder::addEncoder('a', 2, 3);
+    pinMode(ENC1, INPUT);   
+    pinMode(ENC2, INPUT);   
 }
 
 void loop()
 {
-  encoder *thisEncoder;
   Serial.println("Hallo Welt!.");
   delay(3000);
   Serial.println("Calibrating...");
@@ -43,38 +45,48 @@ void loop()
   Calibrate();
   Serial.println("Done.");
   
-  thisEncoder=AdaEncoder::genie(&clicks, &id);
+  pos = 0;
   
-  int oldPos = 0;
   while(true)
   {
-    thisEncoder=AdaEncoder::genie(&clicks, &id);
-    if (thisEncoder != NULL) {
-      pos += clicks;
-      if (clicks != 0)
-      {
-        Serial.println(pos);
-      }
-    }
-  }    
-    
-    /*
-    int i = digitalRead(Enc1);
-    int j = digitalRead(Enc2);
-    sprintf(buf, "%d %d", i, j);
-    Serial.println(buf);
-    */
-   
-   /* 
-    int newPos = encoder.read();
-    if (newPos != oldPos)
-    {
-      Serial.println(newPos);
-      oldPos = newPos;
-    }
-    */
+    GoTo(1000);
+    delay(500);
+    pos = myEncoder.read();
+    Serial.println(pos);
+
+    GoTo(8000);
+    delay(500);
+    pos = myEncoder.read();
+    Serial.println(pos);
   }
 }
+
+void GoTo(long pos)
+{
+  long myPos;
+  do 
+  {
+    myPos = myEncoder.read();
+    if (abs(myPos - pos) < EPSILON)
+    {
+      SetMotorSpeed(0);
+    }
+    else if (myPos < pos)
+    {
+      SetMotorSpeed(255);
+    }
+    else
+    {
+      SetMotorSpeed(-255);
+    }
+  }
+  while (abs(myPos - pos) > EPSILON);
+
+  SetMotorSpeed(0);
+  sprintf(buf, "%ld %ld", pos, myPos);
+  Serial.println(buf);
+}  
+
 
 void Calibrate()
 {
@@ -96,10 +108,12 @@ void Calibrate()
   {
     ;
   }
-  encoder.write(0);
+  myEncoder.write(0);
   }
   SetMotorSpeed(0);
 }
+  
+  
   
  
 void SetMotorSpeed(signed int motorSpeed)
