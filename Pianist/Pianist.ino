@@ -6,6 +6,11 @@
 #define E2 6                      
 #define M2 7
 
+#define DATASIZE 500
+
+int bigdata[DATASIZE];
+//int bigtime[DATASIZE];
+
 // Calibration sensor 
 #define ST 8
 
@@ -17,9 +22,14 @@
 
 char buf [20];
 
-signed int motorSpeed = 0;
-long pos = 0;
-long oldPos = 0;
+int initPos = 0;
+int curPos = 0;
+int stopPos = 0;
+
+long initTime;
+long curTime;
+long nxtTime;
+
 
 
 Encoder myEncoder(ENC1, ENC2);
@@ -45,20 +55,67 @@ void loop()
   Calibrate();
   Serial.println("Done.");
   
-  pos = 0;
+  GoTo(1000);
+  delay(500);
+  GoTo(1000);
+  delay(500);
+  GoTo(1000);
+  delay(500);
+  GoTo(1000);
+  delay(1000);
+  
+  initPos = myEncoder.read();
+  stopPos = initPos + 7000; 
+  Serial.println(initPos);
+  delay(500);
+  
+  int idx = 0;
+  SetMotorSpeed(250);    
+  unsigned int isRunning = 1;
+  
+  initTime = micros();
   
   while(true)
   {
-    GoTo(1000);
-    delay(500);
-    pos = myEncoder.read();
-    Serial.println(pos);
-
-    GoTo(8000);
-    delay(500);
-    pos = myEncoder.read();
-    Serial.println(pos);
+    curTime = micros();
+    curPos = myEncoder.read();
+    
+    if (isRunning && (curPos > stopPos))
+    {
+        SetMotorSpeed(0);    
+        isRunning = 0;
+    }
+    int deltaX = curPos - initPos;
+    int deltaT = (curTime - initTime) / 100;
+    bigdata[idx] = isRunning << 15 | deltaX;
+//    bigtime[idx] = deltaT;
+    
+    idx++;
+    if (idx >= DATASIZE)
+    {
+      break;
+    }
+    
+    nxtTime = curTime + 1000;
+    
+    while (micros() < nxtTime)
+    {
+      ;
+    }
   }
+  
+  Serial.println("Finished");
+  
+  for (int i = 0; i < DATASIZE; i++)
+  {
+    isRunning = (bigdata[i] & 0x8000) ? 1 : 0;
+    sprintf(buf, "%d\t%d\t%d", i, isRunning, (bigdata[i] & 0x7FFF)),
+    Serial.println(buf);
+  }
+  
+  Serial.println("Done");
+  
+  while(true);
 }
 
 void GoTo(long pos)
