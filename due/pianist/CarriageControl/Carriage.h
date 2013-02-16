@@ -1,8 +1,6 @@
 #ifndef CARRIAGE_h_
 #define CARRIAGE_h_ 
 
-
-
 #include "arduino.h"
 #include "pins_arduino.h"
 
@@ -24,6 +22,7 @@ class CarriageDriver
     CarriageDriver(unsigned char endSesnorPinNr);
     long GetPosition();
     void Calibrate();
+    void SpeedCheck();
 };
 
 

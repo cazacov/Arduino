@@ -1,4 +1,5 @@
 #include "Carriage.h"
+#include "Logger.h"
 
 //http://arduino.cc/forum/index.php/topic,140205.0.html
 
@@ -38,7 +39,7 @@ CarriageDriver::CarriageDriver(unsigned char endSensorPinNr)
 long CarriageDriver::GetPosition()
 {
   long result = REG_TC0_CV0;
-  return result;
+  return -result;
 }  
   
 void CarriageDriver::Calibrate()
@@ -61,9 +62,10 @@ void CarriageDriver::Calibrate()
     {
       ;
     }
-    ResetPosition();
   }
   SetMotorSpeed(0); 
+  delay(300);
+  ResetPosition();
 }
 
 void CarriageDriver::ResetPosition()
@@ -93,6 +95,57 @@ void CarriageDriver::SetMotorSpeed(int newSpeed)
     ms = 255;
   }
   analogWrite(motorSpeedPin, ms);     
+}
+
+void CarriageDriver::SpeedCheck()
+{
+  Logger lg;
+  lg.Clear();
+  
+  int motorSpeed;
+  int prevPos = GetPosition();
+  int counter = 0;
+  int phase = 0;
+  long nxtTime;
+  
+  while (counter < 500)
+  {
+    nxtTime = micros() + 1000;
+    long curPos = GetPosition();  
+    
+    switch (phase)
+    {
+      case 0: // acceleration
+        motorSpeed = 250;
+        if (curPos >= 7000)
+        {
+          motorSpeed = -200;
+          phase = 1;
+        }
+        break;
+      case 1: // deceleration
+        motorSpeed = -200;
+        if (curPos <= prevPos)
+        {
+          motorSpeed = 0;
+          phase = 2;
+        }
+        break;     
+      case 2: // idle
+        motorSpeed = 0;
+        break;             
+    }        
+    prevPos = curPos;
+    SetMotorSpeed(motorSpeed);
+    lg.AddToLog(curPos, motorSpeed);
+    counter++;
+    while (micros() < nxtTime)
+    {
+      ;
+    }
+  }
+  SetMotorSpeed(0);
+  lg.FlushToSerial();
 }
 
 
