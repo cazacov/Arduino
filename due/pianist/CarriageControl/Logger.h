@@ -9,17 +9,17 @@ class CarriageLogEntry
   public:
     int Position;
     int MotorSpeed;
+    int Decision;
 };
 
 class Logger
 {
-  private:
+  public:
     CarriageLogEntry lg[LOGSIZE];
     int logPos;
-  public:
     Logger();
     void Clear();
-    boolean AddToLog(int position, int speed);
+    boolean AddToLog(int position, int speed, int decision = 0);
     void FlushToSerial();
 };
 

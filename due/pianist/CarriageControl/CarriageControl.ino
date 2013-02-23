@@ -1,26 +1,44 @@
 #include "Carriage.h"
+#include "PhysicalModel.h"
 
 CarriageDriver car = CarriageDriver(3);
+PhysicalModel* pm;
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(57600); 
   for (int i = 5; i >=0; i--)
   {
     Serial.println(i);
-    delay(1000);
+    delay(800);
   }
+  pm = new PhysicalModel();
 }
 
 void loop() 
 {
-  // put your main code here, to run repeatedly: 
+  //return;
+  
   car.Calibrate();
   delay(500);
   
-  car.SpeedCheck();
+  //car.SpeedCheck();
+  
+  car.SpeedCheck2(pm);
+  
+  car.GoRaw(2000);
+  delay(1000);
+  
+  for (int i = 0; i < 1; i++)
+  {  
+    car.GoExact(7000, pm);
+    delay(1000);
+    Serial.println(car.GetPosition());
+    
+    car.GoExact(1000, pm);
+    delay(1000);
+    Serial.println(car.GetPosition());
+  }
 
-  Serial.println("Done");
   while (true)  
   {
      ; //Serial.println(car.GetPosition());

@@ -1,30 +1,28 @@
 #ifndef PHYSICALMODEL_h_
 #define PHYSICALMODEL_h_
 
-#define LEVELCOUNT 7
+#include "Logger.h"
 
-class SpeedLevel
-{
-  public:
-    int LowBoundry;
-    int HighBoundry;
-    int AccDistance;
-    int DecDistance;
-};    
+enum MovingPhase 
+{ mpAcceleration,
+  mpDeceleration, 
+  mpStop
+};
 
 class PhysicalModel
 {
   private:
-    SpeedLevel levels[LEVELCOUNT];
+    char buf[50];
   public:
-    int LastLevel;
+    int MaxSpeed;
+    int DecPath[30];
+
+    int LastEstimation;
   
-    PhysicalModel(int maxSpeed);
-    void InitAcceleration(int points, double a, double b, double c, double d);   
-    void InitDeceleration(int points, double a, double b, double c, double d);    
-    void PrintToSerial();
-    
-    int MakeDecision(int currentPosition, int targetPosition, int currentSpeed);
+//    PhysicalModel();
+    int CalculateMotorSpeed(int delta, int currentSpeed, MovingPhase &movingPhase);
+    void InitAcc(int targetPosition, int deccelerationSpeed, Logger* lg);
+    void ShowEstimations();
 };
 
 

@@ -9,6 +9,7 @@
 #define DATASIZE 500
 
 int bigdata[DATASIZE];
+signed char bigspeed[DATASIZE];
 //int bigtime[DATASIZE];
 
 // Calibration sensor 
@@ -70,8 +71,8 @@ void loop()
   delay(500);
   
   int idx = 0;
-  SetMotorSpeed(250);    
-  unsigned int isRunning = 1;
+  //SetMotorSpeed(250);    
+  //unsigned int isRunning = 1;
   
   initTime = micros();
   
@@ -80,15 +81,14 @@ void loop()
     curTime = micros();
     curPos = myEncoder.read();
     
-    if (isRunning && (curPos > stopPos))
-    {
-        SetMotorSpeed(0);    
-        isRunning = 0;
-    }
+    int motorSpeed = updatePid(stopPos, curPos); 
+    
     int deltaX = curPos - initPos;
     int deltaT = (curTime - initTime) / 100;
-    bigdata[idx] = isRunning << 15 | deltaX;
-//    bigtime[idx] = deltaT;
+    bigdata[idx] = deltaX;
+    bigspeed[idx] = (motorSpeed >> 1);
+    
+    SetMotorSpeed(motorSpeed);
     
     idx++;
     if (idx >= DATASIZE)
@@ -108,8 +108,7 @@ void loop()
   
   for (int i = 0; i < DATASIZE; i++)
   {
-    isRunning = (bigdata[i] & 0x8000) ? 1 : 0;
-    sprintf(buf, "%d\t%d\t%d", i, isRunning, (bigdata[i] & 0x7FFF)),
+    sprintf(buf, "%d\t%d\t%d", i, int(bigspeed[i]), (bigdata[i] & 0x7FFF));
     Serial.println(buf);
   }
   
@@ -117,6 +116,30 @@ void loop()
   
   while(true);
 }
+
+
+float K = 1.4;
+long   Kp = 3;                      
+long   Ki = 0;                   
+long   Kd = 0;  
+long last_error = 0;
+long integrated_error = 0;
+long pTerm = 0;
+long iTerm = 0;
+long dTerm = 0;
+
+#define GUARD_GAIN 100
+
+int updatePid(int targetPosition, int currentPosition)   {
+  int error = targetPosition - currentPosition; 
+  pTerm = Kp * error;
+  integrated_error += error;                                       
+  iTerm = Ki * constrain(integrated_error, -GUARD_GAIN, GUARD_GAIN);
+  dTerm = Kd * (error - last_error);                            
+  last_error = error;
+  return constrain(K*(pTerm + iTerm + dTerm), -255, 255);
+}
+
 
 void GoTo(long pos)
 {

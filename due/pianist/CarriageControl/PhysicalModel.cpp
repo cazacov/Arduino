@@ -1,186 +1,151 @@
 #include "PhysicalModel.h"
 #include <arduino.h>
 
-PhysicalModel::PhysicalModel(int maxSpeed)
+void PhysicalModel::InitAcc(int targetPosition, int deccelerationSpeed, Logger* lg)
 {
-  levels[0].LowBoundry = 0;  
-  levels[0].HighBoundry = 1;
-
-  int nxtBound = levels[0].HighBoundry + 1;
-  for (int i = 1; i < LEVELCOUNT; i++)
+  MaxSpeed = 0;
+  for (int i = 0; i < 30; i++)
   {
-    levels[i].LowBoundry = nxtBound;
-    levels[i].HighBoundry = (maxSpeed - 2)*(i)/(LEVELCOUNT-1) + 2;
-    nxtBound = levels[i].HighBoundry + 1;
-  }      
-  for (int i = 0; i < LEVELCOUNT; i++)
-  {
-    levels[i].AccDistance = levels[i].DecDistance = 0;
+    DecPath[i] = 0;
   }
-}  
 
-void PhysicalModel::InitAcceleration(int points, double a, double b, double c, double d)
-{
-  int currentLevel = 0;
-  double levelDistance = 0;
-  
-  for (int x = 0; x < points; x++)
+  for (int i = 0; i < 10; i++)
   {
-    double y = x*x*x*a + x*x*b + x*c + d;
-    if (y > levels[currentLevel].HighBoundry)
+     if (lg->lg[i].Position < 0) 
     {
-      levels[currentLevel].AccDistance = levelDistance;
-      levelDistance = y;
-      currentLevel++;
+      lg->lg[i].Position = 0;
     }
-    else
-    {
-      levelDistance += y;
-    }    
-  } 
-  if (currentLevel <= LEVELCOUNT && levels[LEVELCOUNT - 1].AccDistance == 0)
-  {
-    levels[LEVELCOUNT - 1].AccDistance = levelDistance;
-  }  
-}
-
-void PhysicalModel::InitDeceleration(int points, double a, double b, double c, double d)
-{
-  int currentLevel = LEVELCOUNT-1;
-  double levelDistance = 0;
+  }
   
-  char buf[40];
-  
-  for (int x = 1; x < points; x++)
+  for (int i = 1; i < lg->logPos; i++)
   {
-    double y = x*x*x*a + x*x*b + x*c + d;
-    sprintf(buf, "%d %d %lf %lf", x, currentLevel, y, levelDistance);
-    Serial.println(buf);
-
-    
-    if (y < 0)
+    lg->lg[i].Decision = lg->lg[i].Position - lg->lg[i-1].Position;  
+    if (lg->lg[i].Decision > MaxSpeed)
     {
-      y = 0;
-    }      
-    if (y < levels[currentLevel].LowBoundry)
-    {
-      if (levelDistance < 1)
-      {
-        levelDistance = 1;
-      }
-      levels[currentLevel].DecDistance = levelDistance;
-      levelDistance = y;
-      currentLevel--;
+      MaxSpeed = lg->lg[i].Decision;
     }
-    else
-    {
-      levelDistance += y;
-    }    
-  } 
-  if (levelDistance < 1)
-  {
-    levelDistance = 1;
   }
-  if (levels[0].DecDistance == 0)
-  {
-    levels[0].DecDistance = levelDistance;
-  }  
-}
+  sprintf(buf, "Max speed=%d", MaxSpeed); 
+  Serial.println(buf);
 
-void PhysicalModel::PrintToSerial()
-{
-  char buf[40];
-  int sumAcc = 0; 
-  int sumDec = 0;  
-  
-  for (int i = 0; i < LEVELCOUNT; i++)
+  // find stopPoint
+  int stopPoint;
+  for (stopPoint = 100; stopPoint <= lg->logPos; stopPoint++)
   {
-    sumAcc += levels[i].AccDistance;
-    sumDec += levels[i].DecDistance;    
-    sprintf(buf, "%d %d-%d\t%d\t%d", i, levels[i].LowBoundry, levels[i].HighBoundry, levels[i].AccDistance, levels[i].DecDistance);
-    Serial.println(buf);
-  }
-  
-  sprintf(buf, "Sum acc: %d  dec: %d", sumAcc, sumDec);
-  Serial.println(buf);  
-}
-
-int PhysicalModel::MakeDecision(int currentPosition, int targetPosition, int currentSpeed)
-{
-  int xTolerance = 10;
-  int sTolerance = 3;  
-
-  if (abs(currentPosition - targetPosition) < xTolerance)
-  {
-    if (abs(currentSpeed) <= levels[0].HighBoundry)
-    {
-      // target reached
-      Serial.println("T");
-      return 0;
-    }
-  }    
-  
-  if (currentPosition > targetPosition)
-  {
-    // inverse x
-    return -MakeDecision(targetPosition*2-currentPosition, targetPosition, -currentSpeed);
-  }
-  
-  /* Assumptions:
-  currentPos < targetPos;
-  */
-  
-  // find current speed level
-  int currentLevel;
-  for (currentLevel = 0; currentLevel < LEVELCOUNT; currentLevel++)
-  { 
-    if (levels[currentLevel].HighBoundry > currentSpeed)
-    {
+    if (lg->lg[stopPoint].Decision <= 0)
+    { 
       break;
     }
   }
-  if (currentLevel >= LEVELCOUNT)
+
+  int decPos = 0;
+  int prevSpeed = lg->lg[stopPoint].Decision;
+  
+  for (int i = stopPoint; i>0 && lg->lg[i].MotorSpeed <= 0; i--)
   {
-    currentLevel = LEVELCOUNT - 1;
+    decPos+= lg->lg[i].Decision;
+    if (lg->lg[i].Decision > prevSpeed)
+    {
+      DecPath[prevSpeed] = decPos;
+      prevSpeed = lg->lg[i].Decision;
+    } 
   }
-  LastLevel = currentLevel;
   
-  // check full brake scenario
-  int decDistance = 0;
-  for (int i = 0; i <= currentLevel; i++)
+  if (DecPath[prevSpeed] == 0)
   {
-    decDistance += levels[i].DecDistance;
+    DecPath[prevSpeed] = decPos;
   }
   
-  int delta = targetPosition - currentPosition - decDistance;
-  
-  if (delta < 0)
+  while (prevSpeed < MaxSpeed)
   {
-    // FULL BRAKE!
-    return -1;
+    DecPath[prevSpeed+1] = DecPath[prevSpeed];      
+    prevSpeed++;
+  }
+    
+  
+  // close gaps
+  for (int p1 = 1; p1 < MaxSpeed; p1++)
+  {
+     if (DecPath[p1] == 0)
+     {   
+       int p2 = p1+1;
+       while(p2 < MaxSpeed && DecPath[p2] == 0)
+       {
+         p2++;
+       }
+       int x1 = DecPath[p1-1];
+       int x2 = DecPath[p2];
+       
+       for (int p = 0; p < p2-p1; p++)
+       {
+         DecPath[p1 + p] = x1 + (x2-x1) * (p+1) / (p2-p1+1);
+       }
+       p1 = p2;
+     }
+  }
+  
+  ShowEstimations();
+  
+  /*
+  Serial.println("Dec path");
+  for (int i = 0; i <= MaxSpeed; i++)
+  {
+      sprintf(buf, "%d %d", i, DecPath[i]); 
+      Serial.println(buf);
+  } 
+ */ 
+}
+
+int PhysicalModel::CalculateMotorSpeed(int delta, int currentSpeed, MovingPhase &movingPhase)
+{
+  if (movingPhase == mpStop || 
+    (movingPhase == mpDeceleration && currentSpeed < 0))
+  {
+      // target reached
+      movingPhase = mpStop;
+      return 0;
+  }    
+  
+  if (currentSpeed > MaxSpeed)
+  {
+    currentSpeed = MaxSpeed;
+  }
+  int estimatedBreakDistance = DecPath[currentSpeed];
+  LastEstimation = estimatedBreakDistance;
+  int diff = delta - estimatedBreakDistance;
+  
+  if (movingPhase == mpAcceleration && (diff > currentSpeed/2))
+  {
+    return 255;
   }
   else
   {
-    if (currentLevel > 0)
-    {
-      if (delta < currentSpeed)
-      {
-        // SHORT BREAK
-        return -1;
-      }
-      else
-      {
-        // ACCELERATE
-        return 1;
-      }
-    }
-    else
-    {
-      // 0-level, we are far enough from the target
-      return 1;
-    }  
+    movingPhase = mpDeceleration;
   }
-  Serial.println("F");
-  return 0;
-}  
+  
+  if (fabs(diff) < currentSpeed / 2)
+  {
+    return -220;
+  }
+  
+  if (diff > 0)
+  {
+    return -220.0 * (double)delta / estimatedBreakDistance;
+  }
+  else
+  {
+    return -220.0  + diff;
+  }
+}
 
+void PhysicalModel::ShowEstimations()
+{
+  Serial.print("Max speed: ");
+  Serial.println(MaxSpeed);
+  
+  for (int i = 0; i <= MaxSpeed; i++)
+  {
+      sprintf(buf, "%d %d", i, DecPath[i]); 
+      Serial.println(buf);
+  }  
+}

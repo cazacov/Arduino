@@ -68,6 +68,23 @@ void CarriageDriver::Calibrate()
   ResetPosition();
 }
 
+void CarriageDriver::GoRaw(int newPosition)
+{
+  do 
+  {
+    int delta = newPosition - GetPosition();
+    if (abs(delta) < 30)
+    {
+      SetMotorSpeed(0);
+      return;
+    }
+    else
+    {
+      SetMotorSpeed(delta);  
+    }
+  } while (true);
+}
+
 void CarriageDriver::ResetPosition()
 {
   REG_TC0_CCR0 = 5;     
@@ -97,7 +114,7 @@ void CarriageDriver::SetMotorSpeed(int newSpeed)
   analogWrite(motorSpeedPin, ms);     
 }
 
-void CarriageDriver::SpeedCheck()
+void CarriageDriver::SpeedCheck2(PhysicalModel* pm)
 {
   Logger lg;
   lg.Clear();
@@ -119,12 +136,12 @@ void CarriageDriver::SpeedCheck()
         motorSpeed = 250;
         if (curPos >= 7000)
         {
-          motorSpeed = -200;
+          motorSpeed = -220;
           phase = 1;
         }
         break;
       case 1: // deceleration
-        motorSpeed = -200;
+        motorSpeed = -220;
         if (curPos <= prevPos)
         {
           motorSpeed = 0;
@@ -146,7 +163,85 @@ void CarriageDriver::SpeedCheck()
   }
   SetMotorSpeed(0);
   lg.FlushToSerial();
+  pm->InitAcc(7000, -220, &lg);
 }
 
+
+void CarriageDriver::MoveABit()
+{
+  int pos = GetPosition();
+  SetMotorSpeed(200);
+  
+  do {
+    ;
+  } while (abs(pos - GetPosition()) < 2);
+  SetMotorSpeed(0);
+}
+
+
+
+void CarriageDriver::GoExact(int targetPosition, PhysicalModel* pm)
+{
+  pm->ShowEstimations();
+  
+  Logger logger;
+  logger.Clear();
+  
+  int motorSpeed;
+  int prevPos = GetPosition();
+  long nxtTime;
+  int counter = 0;
+  int stopFlag = 0;
+  MovingPhase movingPhase = mpAcceleration;
+
+  while (counter < 400)
+  {
+    nxtTime = micros() + 1000;
+    int curPos = GetPosition();  
+    int curSpeed = curPos - prevPos;
+    int delta = targetPosition - curPos;
+    
+    if (delta >= 0)
+    {
+      motorSpeed = pm->CalculateMotorSpeed(delta, curSpeed, movingPhase);
+    }
+    else
+    {
+      motorSpeed = -pm->CalculateMotorSpeed(-delta, -curSpeed, movingPhase);
+    }
+    
+    if (movingPhase == mpStop)
+    {
+      Serial.println("STOP");
+      SetMotorSpeed(0);
+      break;
+    }
+    
+    // some checks
+    if (curPos > 7500)
+    {
+      Serial.println("7500 Limit");
+      SetMotorSpeed(0);
+      break;
+    }
+    if (curPos < 500 && motorSpeed < 0)
+    {
+      Serial.println("500 Limit");
+      SetMotorSpeed(0);
+      break;
+    }
+    
+    prevPos = curPos;
+    SetMotorSpeed(motorSpeed);
+    logger.AddToLog(curPos, motorSpeed, pm->LastEstimation);
+    counter++;
+    while (micros() < nxtTime)
+    {
+      ;
+    }
+  }
+  SetMotorSpeed(0);
+  logger.FlushToSerial();
+}  
 
 
