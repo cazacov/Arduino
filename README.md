@@ -4,4 +4,6 @@
 
 ## Arduino DUE ##
 Pianist - Piano playing robot built from the old inkjet printer.
-![Pianist - piano playing robot](https://github.com/cazacov/Arduino/blob/master/_img/pianist.jpg)
+
+<img src="https://github.com/cazacov/Arduino/blob/master/_img/pianist.jpg?raw=true" alt="Robot playing piano" width="450" height="300"/>
+
