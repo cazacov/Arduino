@@ -1,52 +1,45 @@
-#include <Servo.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <ps2.h>
+#include <Servo.h>
+
+#include "Display.h"
 #include "Carriage.h"
 #include "PhysicalModel.h"
 #include "HandDriver.h"
-#include "Display.h"
 
+DebugDisplay dis;
+PS2Mouse mouse(3, 2);
 
 CarriageDriver car = CarriageDriver(3);
 PhysicalModel* pm;
 HandDriver* hand = new HandDriver();
-PS2Mouse mouse(3, 2);
-MyDisplay dis;
 
 void setup() {
   Serial.begin(57600); 
-  for (int i = 5; i >=0; i--)
-  {
-    dis.Debug("%d%", i);
-    Serial.println(i);
-    delay(800);
-  }
+  dis.begin();
   pm = new PhysicalModel();
   hand->init(8);
 }
 
 void loop() 
 {
-  //return;
-  
   car.Calibrate();
   delay(500);
+  car.SpeedCheck2();
+
+
+  car.GoExact(2000);
+  delay(100);
+  int x = car.GetPosition();
   
+  car.GoExact(7000);
+  delay(100);
+  int x2 = car.GetPosition();
+  
+  dis.showLine(0, "X1=%d  X2=%d", x, x2);
+
   hand->demo();
 
   while(1);
-  
-  //car.SpeedCheck();
-  
-  car.SpeedCheck2(pm);
-  
-  car.GoRaw(2000);
-  delay(1000);
-  
-  while(1);
-  
-  
-  
-  
 }

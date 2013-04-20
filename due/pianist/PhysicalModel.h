@@ -3,6 +3,8 @@
 
 #include "Logger.h"
 
+#define MAXSPEED 30
+
 enum MovingPhase 
 { mpAcceleration,
   mpDeceleration, 
@@ -15,7 +17,7 @@ class PhysicalModel
     char buf[50];
   public:
     int MaxSpeed;
-    int DecPath[30];
+    int DecPath[MAXSPEED];
 
     int LastEstimation;
   

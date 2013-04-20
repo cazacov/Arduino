@@ -72,6 +72,7 @@ void CarriageDriver::Calibrate()
   SetMotorSpeed(0); 
   delay(300);
   ResetPosition();
+  MoveABit();
 }
 
 void CarriageDriver::GoRaw(int newPosition)
@@ -120,7 +121,7 @@ void CarriageDriver::SetMotorSpeed(int newSpeed)
   analogWrite(motorSpeedPin, ms);     
 }
 
-void CarriageDriver::SpeedCheck2(PhysicalModel* pm)
+void CarriageDriver::SpeedCheck2()
 {
   Logger lg;
   lg.Clear();
@@ -169,7 +170,7 @@ void CarriageDriver::SpeedCheck2(PhysicalModel* pm)
   }
   SetMotorSpeed(0);
   lg.FlushToSerial();
-  pm->InitAcc(7000, -220, &lg);
+  pm.InitAcc(7000, -220, &lg);
 }
 
 
@@ -186,9 +187,9 @@ void CarriageDriver::MoveABit()
 
 
 
-void CarriageDriver::GoExact(int targetPosition, PhysicalModel* pm)
+void CarriageDriver::GoExact(int targetPosition)
 {
-  pm->ShowEstimations();
+  pm.ShowEstimations();
   
   Logger logger;
   logger.Clear();
@@ -209,11 +210,11 @@ void CarriageDriver::GoExact(int targetPosition, PhysicalModel* pm)
     
     if (delta >= 0)
     {
-      motorSpeed = pm->CalculateMotorSpeed(delta, curSpeed, movingPhase);
+      motorSpeed = pm.CalculateMotorSpeed(delta, curSpeed, movingPhase);
     }
     else
     {
-      motorSpeed = -pm->CalculateMotorSpeed(-delta, -curSpeed, movingPhase);
+      motorSpeed = -pm.CalculateMotorSpeed(-delta, -curSpeed, movingPhase);
     }
     
     if (movingPhase == mpStop)
@@ -239,7 +240,7 @@ void CarriageDriver::GoExact(int targetPosition, PhysicalModel* pm)
     
     prevPos = curPos;
     SetMotorSpeed(motorSpeed);
-    logger.AddToLog(curPos, motorSpeed, pm->LastEstimation);
+    logger.AddToLog(curPos, motorSpeed, pm.LastEstimation);
     counter++;
     while (micros() < nxtTime)
     {

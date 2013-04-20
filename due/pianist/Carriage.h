@@ -20,14 +20,15 @@ class CarriageDriver
     unsigned int mask_quad_A;
     unsigned int mask_quad_B;  
     char buf[40];
+    PhysicalModel pm;        
   public:
     CarriageDriver(unsigned char endSesnorPinNr);
     long GetPosition();
     void Calibrate();
-    void SpeedCheck2(PhysicalModel* pm);    
+    void SpeedCheck2();    
     void MoveABit();
     void GoRaw(int newPosition);
-    void GoExact(int newPosition, PhysicalModel* pm);    
+    void GoExact(int newPosition);    
 };
 
 

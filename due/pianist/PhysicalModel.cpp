@@ -4,14 +4,15 @@
 void PhysicalModel::InitAcc(int targetPosition, int deccelerationSpeed, Logger* lg)
 {
   MaxSpeed = 0;
-  for (int i = 0; i < 30; i++)
+  for (int i = 0; i < MAXSPEED; i++)
   {
     DecPath[i] = 0;
   }
 
+  // ignore first 10 records
   for (int i = 0; i < 10; i++)
   {
-     if (lg->lg[i].Position < 0) 
+    if (lg->lg[i].Position < 0) 
     {
       lg->lg[i].Position = 0;
     }
@@ -28,40 +29,50 @@ void PhysicalModel::InitAcc(int targetPosition, int deccelerationSpeed, Logger* 
   sprintf(buf, "Max speed=%d", MaxSpeed); 
   Serial.println(buf);
 
-  // find stopPoint
-  int stopPoint;
-  for (stopPoint = 100; stopPoint <= lg->logPos; stopPoint++)
+  // find stopIndex
+  int stopIndex;
+  for (stopIndex = 100; stopIndex < lg->logPos; stopIndex++)
   {
-    if (lg->lg[stopPoint].Decision <= 0)
+    if (lg->lg[stopIndex].Decision <= 0)
     { 
       break;
     }
   }
+  sprintf(buf, "Stop index=%d", stopIndex); 
+  Serial.println(buf);
 
-  int decPos = 0;
-  int prevSpeed = lg->lg[stopPoint].Decision;
   
-  for (int i = stopPoint; i>0 && lg->lg[i].MotorSpeed <= 0; i--)
+  // find breakPoint
+  int breakIndex;
+  for (breakIndex = 10; breakIndex < lg->logPos; breakIndex++)
   {
-    decPos+= lg->lg[i].Decision;
-    if (lg->lg[i].Decision > prevSpeed)
-    {
-      DecPath[prevSpeed] = decPos;
-      prevSpeed = lg->lg[i].Decision;
-    } 
+    if (lg->lg[breakIndex].MotorSpeed <= 0)
+    { 
+      break;
+    }
   }
+  sprintf(buf, "Break index=%d", breakIndex); 
+  Serial.println(buf);
   
-  if (DecPath[prevSpeed] == 0)
+  for (int i = breakIndex; i <= stopIndex; i++)
   {
-    DecPath[prevSpeed] = decPos;
-  }
-  
-  while (prevSpeed < MaxSpeed)
-  {
-    DecPath[prevSpeed+1] = DecPath[prevSpeed];      
-    prevSpeed++;
-  }
+    int mySpeed = lg->lg[i].Decision;
+    int distanceToStop = lg->lg[stopIndex].Position - lg->lg[i].Position;
     
+    if (DecPath[mySpeed] == 0)
+    {
+      DecPath[mySpeed] = distanceToStop;
+    }
+  }
+
+  // speeds greater then max are set to maximal distance
+  int i = MAXSPEED - 1;
+  int maxBreakDistance = lg->lg[stopIndex].Position - lg->lg[breakIndex].Position;
+  
+  while (DecPath[i] == 0 && i > 0)
+   {
+    DecPath[i--] = maxBreakDistance;
+  }
   
   // close gaps
   for (int p1 = 1; p1 < MaxSpeed; p1++)
@@ -85,15 +96,6 @@ void PhysicalModel::InitAcc(int targetPosition, int deccelerationSpeed, Logger* 
   }
   
   ShowEstimations();
-  
-  /*
-  Serial.println("Dec path");
-  for (int i = 0; i <= MaxSpeed; i++)
-  {
-      sprintf(buf, "%d %d", i, DecPath[i]); 
-      Serial.println(buf);
-  } 
- */ 
 }
 
 int PhysicalModel::CalculateMotorSpeed(int delta, int currentSpeed, MovingPhase &movingPhase)
