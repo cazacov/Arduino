@@ -1,39 +1,45 @@
 #include "PhysicalModel.h"
 #include <arduino.h>
 
-void PhysicalModel::InitAcc(int targetPosition, int deccelerationSpeed, Logger* lg)
+PhysicalModel::PhysicalModel()
 {
-  MaxSpeed = 0;
+  maxSpeed = 0;
+}
+
+void PhysicalModel::calculateBrakingDistance(Logger* lg, int8_t moveDirection)
+{
+  uint8_t arrayIndex = moveDirection > 0 ? 0 : 1;
+  
   for (int i = 0; i < MAXSPEED; i++)
   {
-    DecPath[i] = 0;
+    brakingDistance[arrayIndex][i] = 0;
   }
 
   // ignore first 10 records
   for (int i = 0; i < 10; i++)
   {
-    if (lg->lg[i].Position < 0) 
+    if (lg->lg[i].position < 0) 
     {
-      lg->lg[i].Position = 0;
+      lg->lg[i].position = 0;
     }
   }
   
   for (int i = 1; i < lg->logPos; i++)
   {
-    lg->lg[i].Decision = lg->lg[i].Position - lg->lg[i-1].Position;  
-    if (lg->lg[i].Decision > MaxSpeed)
+    lg->lg[i].parameter = (lg->lg[i].position - lg->lg[i-1].position) * moveDirection;  
+    if (lg->lg[i].parameter > maxSpeed)
     {
-      MaxSpeed = lg->lg[i].Decision;
+      maxSpeed = lg->lg[i].parameter;
     }
   }
-  sprintf(buf, "Max speed=%d", MaxSpeed); 
+  sprintf(buf, "Max speed=%d", maxSpeed); 
   Serial.println(buf);
 
   // find stopIndex
   int stopIndex;
   for (stopIndex = 100; stopIndex < lg->logPos; stopIndex++)
   {
-    if (lg->lg[stopIndex].Decision <= 0)
+    if (lg->lg[stopIndex].parameter <= 0)
     { 
       break;
     }
@@ -46,7 +52,7 @@ void PhysicalModel::InitAcc(int targetPosition, int deccelerationSpeed, Logger* 
   int breakIndex;
   for (breakIndex = 10; breakIndex < lg->logPos; breakIndex++)
   {
-    if (lg->lg[breakIndex].MotorSpeed <= 0)
+    if (lg->lg[breakIndex].motorSpeed * moveDirection <= 0)
     { 
       break;
     }
@@ -56,49 +62,48 @@ void PhysicalModel::InitAcc(int targetPosition, int deccelerationSpeed, Logger* 
   
   for (int i = breakIndex; i <= stopIndex; i++)
   {
-    int mySpeed = lg->lg[i].Decision;
-    int distanceToStop = lg->lg[stopIndex].Position - lg->lg[i].Position;
+    int mySpeed = lg->lg[i].parameter;
+    int distanceToStop = (lg->lg[stopIndex].position - lg->lg[i].position) * moveDirection;
     
-    if (DecPath[mySpeed] == 0)
+    if (brakingDistance[arrayIndex][mySpeed] == 0)
     {
-      DecPath[mySpeed] = distanceToStop;
+      brakingDistance[arrayIndex][mySpeed] = distanceToStop;
     }
   }
 
   // speeds greater then max are set to maximal distance
   int i = MAXSPEED - 1;
-  int maxBreakDistance = lg->lg[stopIndex].Position - lg->lg[breakIndex].Position;
+  int maxBreakDistance = (lg->lg[stopIndex].position - lg->lg[breakIndex].position) * moveDirection;
   
-  while (DecPath[i] == 0 && i > 0)
+  while (brakingDistance[arrayIndex][i] == 0 && i > 0)
    {
-    DecPath[i--] = maxBreakDistance;
+    brakingDistance[arrayIndex][i--] = maxBreakDistance;
   }
   
   // close gaps
-  for (int p1 = 1; p1 < MaxSpeed; p1++)
+  for (int p1 = 1; p1 < maxSpeed; p1++)
   {
-     if (DecPath[p1] == 0)
+     if (brakingDistance[arrayIndex][p1] == 0)
      {   
        int p2 = p1+1;
-       while(p2 < MaxSpeed && DecPath[p2] == 0)
+       while(p2 < maxSpeed && brakingDistance[arrayIndex][p2] == 0)
        {
          p2++;
        }
-       int x1 = DecPath[p1-1];
-       int x2 = DecPath[p2];
+       int x1 = brakingDistance[arrayIndex][p1-1];
+       int x2 = brakingDistance[arrayIndex][p2];
        
        for (int p = 0; p < p2-p1; p++)
        {
-         DecPath[p1 + p] = x1 + (x2-x1) * (p+1) / (p2-p1+1);
+         brakingDistance[arrayIndex][p1 + p] = x1 + (x2-x1) * (p+1) / (p2-p1+1);
        }
        p1 = p2;
      }
   }
-  
-  ShowEstimations();
+  showEstimations(moveDirection);
 }
 
-int PhysicalModel::CalculateMotorSpeed(int delta, int currentSpeed, MovingPhase &movingPhase)
+int PhysicalModel::calculateMotorSpeed(const int delta, int currentSpeed, MovingPhase &movingPhase, const int8_t moveDirection)
 {
   if (movingPhase == mpStop || 
     (movingPhase == mpDeceleration && currentSpeed < 0))
@@ -108,46 +113,46 @@ int PhysicalModel::CalculateMotorSpeed(int delta, int currentSpeed, MovingPhase 
       return 0;
   }    
   
-  if (currentSpeed > MaxSpeed)
+  if (currentSpeed > maxSpeed)
   {
-    currentSpeed = MaxSpeed;
+    currentSpeed = maxSpeed;
   }
-  int estimatedBreakDistance = DecPath[currentSpeed];
-  LastEstimation = estimatedBreakDistance;
-  int diff = delta - estimatedBreakDistance;
   
-  if (movingPhase == mpAcceleration && (diff > currentSpeed/2))
+  lastEstimation = brakingDistance[moveDirection > 0 ? 0 : 1][currentSpeed];
+  int diff = delta - lastEstimation;
+  
+  if (movingPhase == mpAcceleration && diff > (currentSpeed >> 2))
   {
-    return 255;
+    return FULL_MOTOR_POWER;
   }
   else
   {
     movingPhase = mpDeceleration;
   }
   
-  if (fabs(diff) < currentSpeed / 2)
+  if (abs(diff) < (currentSpeed >> 1))
   {
-    return -220;
+    return -MEDIUM_MOTOR_POWER;
   }
   
   if (diff > 0)
   {
-    return -220.0 * (double)delta / estimatedBreakDistance;
+    return long(-MEDIUM_MOTOR_POWER) * lastEstimation / delta;
   }
   else
   {
-    return -220.0  + diff;
+    return -FULL_MOTOR_POWER  + diff;
   }
 }
 
-void PhysicalModel::ShowEstimations()
+void PhysicalModel::showEstimations(int8_t moveDirection)
 {
-  Serial.print("Max speed: ");
-  Serial.println(MaxSpeed);
+  sprintf(buf, "Direction: %d, Max speed: %d", (int)moveDirection, maxSpeed);
+  Serial.println(buf);
   
-  for (int i = 0; i <= MaxSpeed; i++)
+  for (int i = 0; i <= maxSpeed; i++)
   {
-      sprintf(buf, "%d %d", i, DecPath[i]); 
+      sprintf(buf, "%d %d", i, brakingDistance[moveDirection > 0 ? 0 : 1][i]); 
       Serial.println(buf);
   }  
 }

@@ -5,13 +5,15 @@
 #include "pins_arduino.h"
 #include "PhysicalModel.h"
 
+#define DIR_FORWARD 1
+#define DIR_BACK -1
+
+// Processing cycle in microseconds
+#define PROCESSING_CYCLE 1000
+
 class CarriageDriver
 {
   private:
-    void ResetPosition();
-    boolean IsAtTheEnd();
-    void SetMotorSpeed(int newSpeed);
-    //
     unsigned char endSensorPin;
     unsigned char quad_A;
     unsigned char quad_B;
@@ -21,14 +23,24 @@ class CarriageDriver
     unsigned int mask_quad_B;  
     char buf[40];
     PhysicalModel pm;        
+
+    void resetPosition();
+    boolean isAtTheEnd();
+    void setMotorSpeed(int newSpeed);
+    void speedCheck(int8_t direction);    
+    void moveABit();
+    int targetPosition;
+    int8_t moveDirection;
+    long nxtTime;
+    MovingPhase movingPhase;
+    int prevPos;
   public:
     CarriageDriver(unsigned char endSesnorPinNr);
-    long GetPosition();
-    void Calibrate();
-    void SpeedCheck2();    
-    void MoveABit();
-    void GoRaw(int newPosition);
-    void GoExact(int newPosition);    
+    long getPosition();
+    void calibrate();
+    void goToPosition(int newPosition);    
+    void processEvents();
+    uint8_t is_moving;
 };
 
 

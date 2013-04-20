@@ -24,34 +24,34 @@ void HandDriver::demo()
 {
 	for (unsigned char i = 0; i < SERVOCOUNT; i++)
 	{
-		SetFinger(i, PosMiddle);
+		setFinger(i, PosMiddle);
 	}
 	delay(SERVODELAY);
 
 	for (unsigned char i = 0; i < SERVOCOUNT; i++)
 	{
-		SetFinger(i, PosUp);
+		setFinger(i, PosUp);
 		delay(SERVODELAY);
 	}
 	for (unsigned char i = 0; i < SERVOCOUNT; i++)
 	{
-		SetFinger(i, PosMiddle);
+		setFinger(i, PosMiddle);
 		delay(SERVODELAY);
 	}
 
 	for (unsigned char i = 0; i < SERVOCOUNT; i++)
 	{
-		SetFinger(i, PosDown);
+		setFinger(i, PosDown);
 		delay(SERVODELAY);
 	}
 	for (unsigned char i = 0; i < SERVOCOUNT; i++)
 	{
-		SetFinger(i, PosMiddle);
+		setFinger(i, PosMiddle);
 		delay(SERVODELAY);
 	}
 }
 
-void HandDriver::SetFinger(unsigned char fingerNo, FingerPosition position)
+void HandDriver::setFinger(unsigned char fingerNo, FingerPosition position)
 {
 	unsigned char degree = 90;
 	

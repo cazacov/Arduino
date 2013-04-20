@@ -7,20 +7,22 @@
 class CarriageLogEntry
 {
   public:
-    int Position;
-    int MotorSpeed;
-    int Decision;
+    int position;
+    int motorSpeed;
+    int parameter;
 };
 
 class Logger
 {
   public:
+    Logger();
+    
     CarriageLogEntry lg[LOGSIZE];
     int logPos;
-    Logger();
-    void Clear();
-    boolean AddToLog(int position, int speed, int decision = 0);
-    void FlushToSerial();
+    
+    void clear();
+    boolean addToLog(int position, int speed, int parameter = 0);
+    void flushToSerial();
 };
 
 #endif

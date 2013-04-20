@@ -11,6 +11,8 @@
 
 CarriageDriver::CarriageDriver(unsigned char endSensorPinNr)
 {
+  is_moving = 0;
+  targetPosition = 0;
   endSensorPin = endSensorPinNr;
   quad_A = 2;
   quad_B = 13;
@@ -39,70 +41,58 @@ CarriageDriver::CarriageDriver(unsigned char endSensorPinNr)
   // enable the clock (CLKEN=1) and reset the counter (SWTRG=1) 
   // SWTRG = 1 necessary to start the clock!!
   REG_TC0_CCR0 = 5;    
-  SetMotorSpeed(0);
+  setMotorSpeed(0);
 }
 
-long CarriageDriver::GetPosition()
+long CarriageDriver::getPosition()
 {
   long result = REG_TC0_CV0;
   return -result;
 }  
   
-void CarriageDriver::Calibrate()
+void CarriageDriver::calibrate()
 {
   for (short i = 0; i < 3; i++)
   {
     Serial.println("Going left...");
-    if (!IsAtTheEnd())
+    if (!isAtTheEnd())
     {
-      SetMotorSpeed(-200);
-      while(!IsAtTheEnd())
+      setMotorSpeed(-MEDIUM_MOTOR_POWER);
+      while(!isAtTheEnd())
       {
         ;
       }
-      SetMotorSpeed(0);
+      setMotorSpeed(0);
     }
     Serial.println("Going right...");  
-    SetMotorSpeed(200);
-    while(IsAtTheEnd())
+    setMotorSpeed(MEDIUM_MOTOR_POWER);
+    while(isAtTheEnd())
     {
       ;
     }
   }
-  SetMotorSpeed(0); 
-  delay(300);
-  ResetPosition();
-  MoveABit();
+  setMotorSpeed(0); 
+  delay(250);
+  resetPosition();
+  moveABit();
+  delay(50);
+  speedCheck(DIR_FORWARD);
+  delay(100);
+  speedCheck(DIR_BACK);
+  delay(100);
 }
 
-void CarriageDriver::GoRaw(int newPosition)
-{
-  do 
-  {
-    int delta = newPosition - GetPosition();
-    if (abs(delta) < 30)
-    {
-      SetMotorSpeed(0);
-      return;
-    }
-    else
-    {
-      SetMotorSpeed(delta);  
-    }
-  } while (true);
-}
-
-void CarriageDriver::ResetPosition()
+void CarriageDriver::resetPosition()
 {
   REG_TC0_CCR0 = 5;     
 }
 
-boolean CarriageDriver::IsAtTheEnd()
+boolean CarriageDriver::isAtTheEnd()
 {
   return digitalRead(endSensorPin) == LOW;
 }
 
-void CarriageDriver::SetMotorSpeed(int newSpeed)
+void CarriageDriver::setMotorSpeed(int newSpeed)
 {
   if (newSpeed < 0)
   {
@@ -121,35 +111,36 @@ void CarriageDriver::SetMotorSpeed(int newSpeed)
   analogWrite(motorSpeedPin, ms);     
 }
 
-void CarriageDriver::SpeedCheck2()
+void CarriageDriver::speedCheck(int8_t moveDirection)
 {
   Logger lg;
-  lg.Clear();
+  lg.clear();
   
   int motorSpeed;
-  int prevPos = GetPosition();
+  int prevPos = getPosition();
   int counter = 0;
   int phase = 0;
   long nxtTime;
   
-  while (counter < 500)
+  while (counter < LOGSIZE)
   {
-    nxtTime = micros() + 1000;
-    long curPos = GetPosition();  
+    nxtTime = micros() + PROCESSING_CYCLE;
+    long curPos = getPosition();  
     
     switch (phase)
     {
       case 0: // acceleration
-        motorSpeed = 250;
-        if (curPos >= 7000)
+        motorSpeed = moveDirection > 0 ? FULL_MOTOR_POWER : -FULL_MOTOR_POWER;
+        if (moveDirection > 0 && curPos >= 7000 || moveDirection < 0 && curPos <= 1000)
         {
-          motorSpeed = -220;
+          motorSpeed = -MEDIUM_MOTOR_POWER * moveDirection;
           phase = 1;
         }
         break;
       case 1: // deceleration
-        motorSpeed = -220;
-        if (curPos <= prevPos)
+        motorSpeed = moveDirection > 0 ? -MEDIUM_MOTOR_POWER : MEDIUM_MOTOR_POWER;
+        if (moveDirection > 0 && curPos <= prevPos
+            || moveDirection < 0 && curPos >= prevPos)
         {
           motorSpeed = 0;
           phase = 2;
@@ -160,95 +151,94 @@ void CarriageDriver::SpeedCheck2()
         break;             
     }        
     prevPos = curPos;
-    SetMotorSpeed(motorSpeed);
-    lg.AddToLog(curPos, motorSpeed);
+    setMotorSpeed(motorSpeed);
+    lg.addToLog(curPos, motorSpeed);
     counter++;
     while (micros() < nxtTime)
     {
       ;
     }
   }
-  SetMotorSpeed(0);
-  lg.FlushToSerial();
-  pm.InitAcc(7000, -220, &lg);
+  setMotorSpeed(0);
+  pm.calculateBrakingDistance(&lg, moveDirection);
 }
 
 
-void CarriageDriver::MoveABit()
+void CarriageDriver::moveABit()
 {
-  int pos = GetPosition();
-  SetMotorSpeed(200);
+  int pos = getPosition();
+  setMotorSpeed(MEDIUM_MOTOR_POWER);
   
   do {
     ;
-  } while (abs(pos - GetPosition()) < 2);
-  SetMotorSpeed(0);
+  } while (abs(pos - getPosition()) < 2);
+  setMotorSpeed(0);
 }
 
 
 
-void CarriageDriver::GoExact(int targetPosition)
+void CarriageDriver::goToPosition(int newPosition)
 {
-  pm.ShowEstimations();
+//  pm.showEstimations();
+  is_moving = 0;  
+  setMotorSpeed(0);
+  targetPosition = newPosition;
+  prevPos = getPosition();
+  moveDirection = targetPosition > prevPos ? DIR_FORWARD : DIR_BACK;
+  movingPhase = mpAcceleration;
   
-  Logger logger;
-  logger.Clear();
+  nxtTime = micros() - 1;
+  is_moving = 1;
   
-  int motorSpeed;
-  int prevPos = GetPosition();
-  long nxtTime;
-  int counter = 0;
-  int stopFlag = 0;
-  MovingPhase movingPhase = mpAcceleration;
+  processEvents();
+}
 
-  while (counter < 400)
+void CarriageDriver::processEvents()
+{
+  if (!is_moving) return;
+  
+  long currentTime = micros();
+  
+  if (currentTime < nxtTime) return;
+
+  nxtTime = currentTime + 1000;
+  
+  int curPos = getPosition();  
+  int delta = targetPosition - curPos;
+
+  int motorSpeed;    
+  if (delta >= 0)
   {
-    nxtTime = micros() + 1000;
-    int curPos = GetPosition();  
-    int curSpeed = curPos - prevPos;
-    int delta = targetPosition - curPos;
-    
-    if (delta >= 0)
-    {
-      motorSpeed = pm.CalculateMotorSpeed(delta, curSpeed, movingPhase);
-    }
-    else
-    {
-      motorSpeed = -pm.CalculateMotorSpeed(-delta, -curSpeed, movingPhase);
-    }
-    
-    if (movingPhase == mpStop)
-    {
-      Serial.println("STOP");
-      SetMotorSpeed(0);
-      break;
-    }
-    
-    // some checks
-    if (curPos > 7500)
-    {
-      Serial.println("7500 Limit");
-      SetMotorSpeed(0);
-      break;
-    }
-    if (curPos < 500 && motorSpeed < 0)
-    {
-      Serial.println("500 Limit");
-      SetMotorSpeed(0);
-      break;
-    }
-    
-    prevPos = curPos;
-    SetMotorSpeed(motorSpeed);
-    logger.AddToLog(curPos, motorSpeed, pm.LastEstimation);
-    counter++;
-    while (micros() < nxtTime)
-    {
-      ;
-    }
+    motorSpeed = pm.calculateMotorSpeed(delta, curPos - prevPos, movingPhase, moveDirection);
   }
-  SetMotorSpeed(0);
-  logger.FlushToSerial();
+  else
+  {
+    motorSpeed = -pm.calculateMotorSpeed(-delta, prevPos - curPos, movingPhase, moveDirection);
+  }
+  
+  // some checks
+  if (motorSpeed > 0 && curPos > 8200)
+  {
+    Serial.println("8200 Limit");
+    movingPhase = mpStop;
+  }
+  
+  if (motorSpeed < 0 && curPos < 0)
+  {
+    Serial.println("0 Limit");
+    movingPhase = mpStop;
+  }
+
+  if (movingPhase == mpStop)
+  {
+    Serial.println("STOP");
+    setMotorSpeed(0);
+    is_moving = 0;
+    return;
+  }
+    
+  prevPos = curPos;
+  setMotorSpeed(motorSpeed);
 }  
 
 

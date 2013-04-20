@@ -2,33 +2,33 @@
 
 Logger::Logger()
 {
-  Clear();
+  clear();
 }
 
-void Logger::Clear()
+void Logger::clear()
 {
   logPos = 0;
   for (int i = 0; i < LOGSIZE; i++)
   {
-    lg[i].Position = lg[i].MotorSpeed = lg[i].Decision=0;
+    lg[i].position = lg[i].motorSpeed = lg[i].parameter=0;
   }
 }
 
-boolean Logger::AddToLog(int position, int speed, int decision)
+boolean Logger::addToLog(int position, int speed, int parameter)
 {
   if (logPos >= LOGSIZE)
   {
     return false;
   }
   
-  lg[logPos].Position = position;
-  lg[logPos].MotorSpeed = speed;
-  lg[logPos].Decision = decision;  
+  lg[logPos].position = position;
+  lg[logPos].motorSpeed = speed;
+  lg[logPos].parameter = parameter;  
   
   logPos++;
 }
 
-void Logger::FlushToSerial()
+void Logger::flushToSerial()
 {
   char buf[40];
   
@@ -37,7 +37,7 @@ void Logger::FlushToSerial()
   
   for (int i = 0; i < logPos; i++)
   {
-      sprintf(buf, "%d\t%d\t%d\t%d", i, lg[i].MotorSpeed / 10, lg[i].Position, lg[i].Decision);
+      sprintf(buf, "%d\t%d\t%d\t%d", i, lg[i].motorSpeed / 10, lg[i].position, lg[i].parameter);
       Serial.println(buf);
   }      
 }

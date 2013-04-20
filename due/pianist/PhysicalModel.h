@@ -5,6 +5,9 @@
 
 #define MAXSPEED 30
 
+#define FULL_MOTOR_POWER  250
+#define MEDIUM_MOTOR_POWER  200
+
 enum MovingPhase 
 { mpAcceleration,
   mpDeceleration, 
@@ -15,18 +18,16 @@ class PhysicalModel
 {
   private:
     char buf[50];
+    int maxSpeed;
+    int brakingDistance[2][MAXSPEED];
+  void showEstimations(int8_t moveDirection);
   public:
-    int MaxSpeed;
-    int DecPath[MAXSPEED];
-
-    int LastEstimation;
+    PhysicalModel();
+    int lastEstimation;
   
 //    PhysicalModel();
-    int CalculateMotorSpeed(int delta, int currentSpeed, MovingPhase &movingPhase);
-    void InitAcc(int targetPosition, int deccelerationSpeed, Logger* lg);
-    void ShowEstimations();
+    int calculateMotorSpeed(int delta, int currentSpeed, MovingPhase &movingPhase, int8_t moveDirection);
+    void calculateBrakingDistance(Logger* lg, int8_t moveDirection);
 };
-
-
 #endif
 
