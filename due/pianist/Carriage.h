@@ -39,8 +39,8 @@ class CarriageDriver
     long getPosition();
     void calibrate();
     void goToPosition(int newPosition);    
+    volatile uint8_t is_moving;
     void processEvents();
-    uint8_t is_moving;
 };
 
 

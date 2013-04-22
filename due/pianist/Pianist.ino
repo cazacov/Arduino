@@ -2,6 +2,8 @@
     Pianist - Arduino-controlled piano player made from an old inkjet printer.
     Author: Victor Cazacov
     Copyright (c) 2013
+    
+    ####################################################################
 
     This file is part of Pianist.
 
@@ -17,12 +19,26 @@
 
     You should have received a copy of the GNU General Public License
     along with Pianist.  If not, see <http://www.gnu.org/licenses/>.
+    
+    #####################################################################
+    
+    Third-party libraries that must be installed into Arduino libraries folder
+    - LiquidCrystal I2C
+      Driver for I2C/TWI LCD1602 Module 
+      http://www.dfrobot.com/wiki/index.php?title=I2C/TWI_LCD1602_Module_(SKU:_DFR0063)
+      
+    Changes in libraries:
+      
+    Servo.h (Arduino\hardware\arduino\sam\libraries\Servo\Servo.h)
+      Do NOT DEFINE _useTimer3, _useTimer4, _useTimer5 because we are going to use 
+      DUE timer TC5 in Carriage driver.    
 */    
 
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <ps2.h>
 #include <Servo.h>
+
 
 #include "Display.h"
 #include "Carriage.h"
@@ -33,13 +49,11 @@ DebugDisplay dis;
 PS2Mouse mouse(3, 2);
 
 CarriageDriver car = CarriageDriver(3);
-PhysicalModel* pm;
 HandDriver* hand = new HandDriver();
 
 void setup() {
   Serial.begin(57600); 
   dis.begin();
-  pm = new PhysicalModel();
   hand->init(8);
 }
 
@@ -48,22 +62,14 @@ void loop()
   car.calibrate();
   
   car.goToPosition(7000);
-  while (car.is_moving)
-  {
-    car.processEvents();
-  }
-  delay(100);
-  int x = car.getPosition();
+  delay(500); 
+  int x1 = car.getPosition();
   
   car.goToPosition(2000);
-  while (car.is_moving)
-  {
-    car.processEvents();
-  }
-  delay(100);
+  delay(500);
   int x2 = car.getPosition();
   
-  dis.showLine(0, "X1=%d  X2=%d", x, x2);
+  dis.showLine(0, "X1=%d  X2=%d", x1, x2);
 
   hand->demo();
 
