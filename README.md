@@ -18,6 +18,7 @@ All electronics mounted on the moving carriage was removed as well, leaving only
 <img src="https://github.com/cazacov/Arduino/blob/master/_img/encoder.jpg?raw=true" alt="Robot playing piano" width="600" height="400"/>
 
 Magnet on the bottom of the carriage is detected by a Hall sensor. That's how the robot knows where is the right-most position of the mechanical hand.
+
 <img src="https://github.com/cazacov/Arduino/blob/master/_img/hall_sensor.jpg?raw=true" alt="Robot playing piano" width="600" height="400"/>
 
 The carriage is moved by the DC motor. It's not a stepper motor, so some programming was required for exact positioning of the hand. A common PID controller was not precise enough and needed two/three correction runs to match the desired position. That's why after start the robot makes calibration movements and measures real deceleration speed of the carriage. Then this table is used for braking force calculation to stop the moving carriage exactly at the desired point.
