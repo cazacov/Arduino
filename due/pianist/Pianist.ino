@@ -44,6 +44,7 @@
 #include "Carriage.h"
 #include "PhysicalModel.h"
 #include "HandDriver.h"
+#include "melody.h"
 
 DebugDisplay dis;
 PS2Mouse mouse(3, 2);
@@ -59,6 +60,13 @@ void setup() {
 
 void loop() 
 {
+  Melody melody;
+  
+  melody.init(  "G4 G4 A4 G4 C5 B5+"
+                "G4 G4 A4 G4 D5 C5+"
+                "G4 G4 G5 E4 C5 C5 B4 A4+"
+                "F5 F5 E5 C5 D5 C5");
+  
   car.calibrate();
   
   car.goToPosition(7000);
@@ -69,9 +77,26 @@ void loop()
   delay(500);
   int x2 = car.getPosition();
   
-  dis.showLine(0, "X1=%d  X2=%d", x1, x2);
+  dis.showLine(0, "T1=%d  T2=%d", 7000, 2000);
+  dis.showLine(1, "X1=%d  X2=%d", x1, x2);
 
   hand->demo();
+  
+  melody.start();
+  
+  while (!melody.isFinished())
+  {
+    int pos = melody.getHandPosition();
+    car.goToPosition(pos);
+    while(car.is_moving)
+      ;
+    int noteLength = melody.getNoteLength();
+    int fingerNo = melody.getActiveFinger();
+    hand->fingerDown(fingerNo);
+    delay(noteLength);
+    hand->fingerUp(fingerNo);
+    melody.nextNote();
+  }    
 
   while(1);
 }

@@ -68,3 +68,14 @@ void HandDriver::setFinger(unsigned char fingerNo, FingerPosition position)
 	}
 	servos[fingerNo]->write(degree);
 }
+
+void HandDriver::fingerDown(uint8_t fingerNo)
+{
+  
+}
+
+void HandDriver::fingerUp(uint8_t fingerNo)
+{
+  
+}
+

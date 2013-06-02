@@ -25,6 +25,8 @@ class HandDriver
 	void init(unsigned char noOfFirstPin);
 	void demo();
 	void setFinger(unsigned char fingerNo, FingerPosition position);
+        void fingerDown(uint8_t fingerNo);
+        void fingerUp(uint8_t fingerNo);
 };
 #endif
 
