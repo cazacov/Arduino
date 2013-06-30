@@ -37,7 +37,7 @@ void Logger::flushToSerial()
   
   for (int i = 0; i < logPos; i++)
   {
-      sprintf(buf, "%d\t%d\t%d\t%d", i, lg[i].motorSpeed / 10, lg[i].position, lg[i].parameter);
+      sprintf(buf, "%d\t%d\t%d\t%d", i, lg[i].position, lg[i].motorSpeed, lg[i].parameter);
       Serial.println(buf);
   }      
 }

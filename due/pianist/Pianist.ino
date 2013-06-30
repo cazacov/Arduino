@@ -34,6 +34,7 @@
       DUE timer TC5 in Carriage driver.    
 */    
 
+//#include "C:/Programme/Arduino/hardware/tools/avr/avr/include/avr/io.h"
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <ps2.h>
@@ -45,6 +46,7 @@
 #include "PhysicalModel.h"
 #include "HandDriver.h"
 #include "melody.h"
+#include "SongBook.h"
 
 DebugDisplay dis;
 PS2Mouse mouse(3, 2);
@@ -60,43 +62,47 @@ void setup() {
 
 void loop() 
 {
+  car.calibrate();  
+  
   Melody melody;
   
-  melody.init(  "G4 G4 A4 G4 C5 B5+"
-                "G4 G4 A4 G4 D5 C5+"
-                "G4 G4 G5 E4 C5 C5 B4 A4+"
-                "F5 F5 E5 C5 D5 C5");
+  melody.init(MySongBook.HappyBirthday);
+                
+                
+  char b[30];
   
-  car.calibrate();
-  
-  car.goToPosition(7000);
-  delay(500); 
-  int x1 = car.getPosition();
-  
-  car.goToPosition(2000);
-  delay(500);
-  int x2 = car.getPosition();
-  
-  dis.showLine(0, "T1=%d  T2=%d", 7000, 2000);
-  dis.showLine(1, "X1=%d  X2=%d", x1, x2);
-
-  hand->demo();
+  long delayAfterNote  = 200L * 1000;
   
   melody.start();
-  
-  while (!melody.isFinished())
+  Serial.println("started");
+  delay(100);
+  while(!melody.isFinished())
   {
     int pos = melody.getHandPosition();
+    int len = melody.getNoteLength();
+    sprintf(b, "Next pos=%d\t len=%d", pos, len);
+    Serial.println(b);
+    
+    long startTime = micros() + delayAfterNote;
     car.goToPosition(pos);
     while(car.is_moving)
+    {
       ;
-    int noteLength = melody.getNoteLength();
-    int fingerNo = melody.getActiveFinger();
-    hand->fingerDown(fingerNo);
-    delay(noteLength);
-    hand->fingerUp(fingerNo);
+    }
+    while (micros() < startTime)
+    {  
+      ;
+    }
+    
+    hand->setFinger(4, PosDown);
+    delay(len);
+    hand->setFinger(4, PosMiddle);
+    delay(100);
+    
+    int cPos = car.getPosition();
+    Serial.println(cPos);
     melody.nextNote();
-  }    
-
+  }
+  
   while(1);
 }

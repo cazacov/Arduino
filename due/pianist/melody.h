@@ -6,6 +6,11 @@
 
 class Melody
 {
+  private:
+    int notePosition(char* note);
+    int noteLength(char* note);    
+    char buffer[250];
+    char* notePos;
   public:
     Melody();
     void init(char* song);

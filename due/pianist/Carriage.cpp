@@ -11,6 +11,8 @@
 // Uses DFRobot L298P shield to control motor (pins 4,5,6,7)
 
 CarriageDriver* carriageInstance;
+Logger logg;
+
 void setupTimer();  
 
 CarriageDriver::CarriageDriver(unsigned char endSensorPinNr) 
@@ -186,7 +188,7 @@ void CarriageDriver::moveABit()
 
 void CarriageDriver::goToPosition(int newPosition)
 {
-//  pm.showEstimations();
+  logg.clear();
   is_moving = 0;  
   setMotorSpeed(0);
   targetPosition = newPosition;
@@ -212,7 +214,7 @@ void CarriageDriver::processEvents()
   
   int curPos = getPosition();  
   int delta = targetPosition - curPos;
-
+  
   int motorSpeed;    
   if (delta >= 0)
   {
@@ -222,6 +224,8 @@ void CarriageDriver::processEvents()
   {
     motorSpeed = -pm.calculateMotorSpeed(-delta, prevPos - curPos, movingPhase, moveDirection);
   }
+  
+  logg.addToLog(curPos, curPos - prevPos, motorSpeed);
   
   // some checks
   if (motorSpeed > 0 && curPos > 8200)
@@ -239,8 +243,12 @@ void CarriageDriver::processEvents()
   if (movingPhase == mpStop)
   {
     Serial.println("STOP");
+    Serial.println(motorSpeed);
+    Serial.println(curPos);
+    Serial.println(delta);
     setMotorSpeed(0);
     is_moving = 0;
+    //logg.flushToSerial();
     return;
   }
     
