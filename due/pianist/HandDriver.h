@@ -12,14 +12,15 @@
 #define SERVOCOUNT 5
 
 enum FingerPosition {
-  PosMiddle = 1500,
-  PosDown = 2200, 
-  PosUp = 800};
-
-
+  PosMiddle = 1,
+  PosDown = 2, 
+  PosUp = 0};
+  
+  
 class HandDriver
 {
  private:
+        int servoPositions[SERVOCOUNT][3];  
         int calibrationOffsets[SERVOCOUNT]; 
 	Servo* servos[SERVOCOUNT];
  public:

@@ -6,6 +6,7 @@ class SongBook
   public:
     SongBook();
     char* HappyBirthday;
+    char* KeyboardTest;
     char* FuerElise;
 };
 

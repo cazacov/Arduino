@@ -7,18 +7,32 @@
 class Melody
 {
   private:
-    int notePosition(char* note);
-    int noteLength(char* note);    
-    char buffer[250];
+    char songBuffer[250];
     char* notePos;
-  public:
+    int handPosition;
+    int noteLength;
+    int activeFinger;
+    int parseNote(char* note, int& noteKey, int& noteLength, int& byteLength);
+    int noteOffset[12];
+    char txtBuffer[30];
+    int debugFlag;  
+public:
     Melody();
-    void init(char* song);
-    void start();
+    void init(char* song, int debugFlag);
+
+    // hand position in mm
+    int nextNote(int carretPosition);
+
+    // returns next hand position in mm
     int getHandPosition();
+    
+    // returns next note length in ms
     int getNoteLength();
-    int isFinished();
-    void nextNote();
-    uint8_t getActiveFinger();
+    
+    // returns next active finger 0..4
+    int getActiveFinger();
+    
+    // delay before playing next note in milliseconds
+    int delayAfterNote();
 };
 #endif

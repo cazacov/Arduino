@@ -4,16 +4,16 @@
 
 HandDriver::HandDriver()
 {
-  calibrationOffsets[0] = 70;
-  calibrationOffsets[1] = -100;
-  calibrationOffsets[2] = -50;
-  calibrationOffsets[3] = -120;  
-  calibrationOffsets[4] = 0;
-	for (unsigned char i = 0; i < SERVOCOUNT; i++)
-	{
-		servos[i] = new Servo();
-	}
-
+  servoPositions[0] = {800,1570,2200};
+  servoPositions[1] = {800,1400,2000};
+  servoPositions[2] = {800,1450,2000};  
+  servoPositions[3] = {800,1380,2000};
+  servoPositions[4] = {800,1500,2200};  
+  
+  for (unsigned char i = 0; i < SERVOCOUNT; i++)
+  {
+    servos[i] = new Servo();
+  }
 }
 
 void HandDriver::init(unsigned char noOfFirstPin)
@@ -21,7 +21,7 @@ void HandDriver::init(unsigned char noOfFirstPin)
 	for (unsigned char i = 0; i < SERVOCOUNT; i++)
 	{
 		servos[i]->attach(noOfFirstPin + i);
-		servos[i]->write(PosMiddle + calibrationOffsets[i]);
+		servos[i]->write(servoPositions[i][PosMiddle]);
 	}
 }
 
@@ -58,7 +58,7 @@ void HandDriver::demo()
 
 void HandDriver::setFinger(unsigned char fingerNo, FingerPosition position)
 {
-	servos[fingerNo]->write(position + calibrationOffsets[fingerNo]);
+  servos[fingerNo]->write(servoPositions[fingerNo][position]);
 }
 
 void HandDriver::fingerDown(uint8_t fingerNo)

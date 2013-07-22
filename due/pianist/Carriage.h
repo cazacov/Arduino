@@ -7,6 +7,10 @@
 
 #define DIR_FORWARD 1
 #define DIR_BACK -1
+#define TICKS_PER_METER 23467
+#
+#define LIMIT_LEFT 4
+#define LIMIT_RIGHT 328
 
 // Processing cycle in microseconds
 #define PROCESSING_CYCLE 1000
@@ -39,6 +43,8 @@ class CarriageDriver
     long getPosition();
     void calibrate();
     void goToPosition(int newPosition);    
+    int getPosMm();
+    void goToPosMm(int newPositionMm);
     volatile uint8_t is_moving;
     void processEvents();
 };

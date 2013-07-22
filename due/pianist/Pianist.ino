@@ -65,26 +65,21 @@ void loop()
   car.calibrate();  
   
   Melody melody;
-  
-  melody.init(MySongBook.HappyBirthday);
-                
+  melody.init(MySongBook.KeyboardTest, 0);
                 
   char b[30];
   
-  long delayAfterNote  = 200L * 1000;
-  
-  melody.start();
   Serial.println("started");
   delay(100);
-  while(!melody.isFinished())
+  while(melody.nextNote(car.getPosMm()))
   {
     int pos = melody.getHandPosition();
     int len = melody.getNoteLength();
     sprintf(b, "Next pos=%d\t len=%d", pos, len);
     Serial.println(b);
     
-    long startTime = micros() + delayAfterNote;
-    car.goToPosition(pos);
+    long startTime = micros() + melody.delayAfterNote() * 1000L;
+    car.goToPosMm(pos);
     while(car.is_moving)
     {
       ;
@@ -94,14 +89,13 @@ void loop()
       ;
     }
     
-    hand->setFinger(4, PosDown);
+    hand->setFinger(melody.getActiveFinger(), PosDown);
     delay(len);
-    hand->setFinger(4, PosMiddle);
+    hand->setFinger(melody.getActiveFinger(), PosMiddle);
     delay(100);
     
     int cPos = car.getPosition();
     Serial.println(cPos);
-    melody.nextNote();
   }
   
   while(1);

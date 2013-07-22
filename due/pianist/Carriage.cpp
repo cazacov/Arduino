@@ -202,6 +202,29 @@ void CarriageDriver::goToPosition(int newPosition)
   //processEvents();
 }
 
+int CarriageDriver::getPosMm()
+{
+  return getPosition() * 1000 / TICKS_PER_METER;  
+}  
+
+void CarriageDriver::goToPosMm(int newPositionMm)
+{
+  long pos = newPositionMm;
+
+  if (pos < LIMIT_LEFT)
+  {
+    pos = LIMIT_LEFT;
+  }
+  
+  if (pos > LIMIT_RIGHT)
+  {
+    pos = LIMIT_RIGHT;
+  }
+  
+  pos = pos * TICKS_PER_METER / 1000;
+  goToPosition(pos);
+}
+
 void CarriageDriver::processEvents()
 {
   if (!is_moving) return;
