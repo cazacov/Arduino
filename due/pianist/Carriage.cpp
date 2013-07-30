@@ -221,6 +221,13 @@ void CarriageDriver::goToPosMm(int newPositionMm)
     pos = LIMIT_RIGHT;
   }
   
+  if (abs(newPositionMm - getPosMm()) < 5)
+  {
+    setMotorSpeed(0);
+    is_moving = 0;
+    return;
+  }
+  
   pos = pos * TICKS_PER_METER / 1000;
   goToPosition(pos);
 }

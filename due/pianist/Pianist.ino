@@ -62,20 +62,23 @@ void setup() {
 
 void loop() 
 {
-  car.calibrate();  
+  car.calibrate();
   
   Melody melody;
-  melody.init(MySongBook.KeyboardTest, 0);
+  melody.init(MySongBook.AlleMeineEntchen, 0);
                 
   char b[30];
   
   Serial.println("started");
   delay(100);
-  while(melody.nextNote(car.getPosMm()))
+  int pos = car.getPosMm();
+  while(melody.nextNote(pos))
   {
-    int pos = melody.getHandPosition();
+    pos = melody.getHandPosition();
     int len = melody.getNoteLength();
-    sprintf(b, "Next pos=%d\t len=%d", pos, len);
+    int finger = melody.getActiveFinger();
+    
+    sprintf(b, "Next p=%d\t f=%d", pos, finger);
     Serial.println(b);
     
     long startTime = micros() + melody.delayAfterNote() * 1000L;
@@ -96,6 +99,7 @@ void loop()
     
     int cPos = car.getPosition();
     Serial.println(cPos);
+    pos = car.getPosMm();
   }
   
   while(1);

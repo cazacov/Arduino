@@ -13,6 +13,7 @@ int C4_LEFT_SIDE = 93;
 int C4_KEY = 60;  // noteKey as defined in MIDI standart
 int OCTAVE_SIZE = 164;
 const char *NOTE_NAMES[12] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+const int FINGER_POSITIONS[5] = { 96, 72, 48, 24, 0 };
 
 Melody::Melody()
 {
@@ -71,8 +72,9 @@ int Melody::nextNote(int carretPosition)
   int noteKey;
   int noteDuration;
   int byteLength;
+  int isSharp;
   
-  if (!parseNote(notePos, noteKey, noteLength, byteLength))
+  if (!parseNote(notePos, noteKey, noteLength, byteLength, isSharp))
   {
     return 0;    
   }
@@ -85,16 +87,58 @@ int Melody::nextNote(int carretPosition)
     
   int octave = floor((noteKey - C4_KEY) / 12.0);
   
-    if (debugFlag)
+  if (debugFlag)
   {
-    sprintf(txtBuffer, "parse %d %d %d", noteKey, noteLength, byteLength);
+    sprintf(txtBuffer, "parse %d %d %d %d", noteKey, noteLength, byteLength, isSharp);
     Serial.println(txtBuffer);    
   }
   
-  int notePosition = C4_LEFT_SIDE + octave * OCTAVE_SIZE + noteOffset[octavePosition];
+  int positionsForFingers[5];
+  for (int i = 0; i < 5; i++)
+  {
+    positionsForFingers[i] = C4_LEFT_SIDE + octave * OCTAVE_SIZE + noteOffset[octavePosition] - FINGER_POSITIONS[i];
+  }
   
-  activeFinger = 4;
-  handPosition = notePosition;
+  if (isSharp)
+  {
+    positionsForFingers[0] = positionsForFingers[4] = -1000; // sharp notes cannot be played with these fingers
+    activeFinger = 3; // start value
+  }
+  else
+  {
+    positionsForFingers[1] = positionsForFingers[2] = positionsForFingers[3] = - 1000; // non-sharp notes cannot be played with these fingers
+    activeFinger = 4; // start value    
+  }
+  
+  int distance = 500;
+  
+  for (int i = 0; i < 5; i++)
+  {
+    // ignore negative and very small positions
+    if (positionsForFingers[i] < 5)
+    {
+      continue;
+    }
+    
+    int curDistance = abs(carretPosition - positionsForFingers[i]);
+    if ((isSharp && curDistance < 3) || (!isSharp && curDistance < 5))
+    {
+      // finger is already in tolerance interval above the desired note
+      activeFinger = i;
+      distance = curDistance;
+    }
+    if (curDistance < 35)
+    {
+      // hand cannot be moved precisely on short distances
+      continue;
+    }
+    else if (curDistance < distance)
+    {
+      distance = curDistance;
+      activeFinger = i;
+    }
+  }
+  handPosition = positionsForFingers[activeFinger];
   
   notePos+= byteLength;
   return 1;
@@ -107,7 +151,7 @@ int Melody::nextNote(int carretPosition)
   E5 = 76,
   etc
 */    
-int Melody::parseNote(char* note, int& noteKey, int& noteLength, int& byteLength)
+int Melody::parseNote(char* note, int& noteKey, int& noteLength, int& byteLength, int &isSharp)
 {
   if (strlen(note) < 2)
   {
@@ -118,6 +162,7 @@ int Melody::parseNote(char* note, int& noteKey, int& noteLength, int& byteLength
   int octave;
 
   int i;
+  isSharp = 0;
   for (i = 0; i < 12; i++)
   {
     int testStrLen = strlen(NOTE_NAMES[i]);
@@ -127,6 +172,8 @@ int Melody::parseNote(char* note, int& noteKey, int& noteLength, int& byteLength
       {
         continue;
       }
+      
+      isSharp = (note[1] == '#');
       
       noteNumber = i;
       byteLength = testStrLen;

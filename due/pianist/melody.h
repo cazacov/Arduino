@@ -12,7 +12,7 @@ class Melody
     int handPosition;
     int noteLength;
     int activeFinger;
-    int parseNote(char* note, int& noteKey, int& noteLength, int& byteLength);
+    int parseNote(char* note, int& noteKey, int& noteLength, int& byteLength, int& isSharp);
     int noteOffset[12];
     char txtBuffer[30];
     int debugFlag;  
