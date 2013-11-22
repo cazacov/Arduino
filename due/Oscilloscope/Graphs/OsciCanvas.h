@@ -12,15 +12,16 @@
 class OsciCanvas
 {
  private:
-	 double scaleX;
-	 double scaleY;
+	 float scaleX;
+	 float scaleY;
 	 int offsetX;
 	 int offsetY; 
 	 int DELAY;
  public:
 	OsciCanvas();
 	void init(int minX, int minY, int maxX, int maxY);
-	void point(double x, double y);
+	void point(float x, float y);
+	void line(float x1, float y1, float x2, float y2);
 };
 
 extern OsciCanvas Canvas;

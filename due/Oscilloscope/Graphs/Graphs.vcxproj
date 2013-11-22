@@ -77,6 +77,7 @@
     <ClInclude Include="GraphFlower.h" />
     <ClInclude Include="GraphSinus.h" />
     <ClInclude Include="OsciCanvas.h" />
+    <ClInclude Include="GraphRadar.h" />
     <ClInclude Include="Visual Micro\.Graphs.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +85,7 @@
     <ClCompile Include="GraphFlower.cpp" />
     <ClCompile Include="GraphSinus.cpp" />
     <ClCompile Include="OsciCanvas.cpp" />
+    <ClCompile Include="GraphRadar.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
