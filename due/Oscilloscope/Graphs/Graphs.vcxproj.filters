@@ -36,6 +36,12 @@
     <ClInclude Include="GraphRadar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OsciCanvasInt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphSquares.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OsciCanvas.cpp">
@@ -51,6 +57,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GraphRadar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OsciCanvasInt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphSquares.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

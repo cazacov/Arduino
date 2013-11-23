@@ -1,3 +1,5 @@
+#include "GraphSquares.h"
+#include "OsciCanvasInt.h"
 #include "GraphRadar.h"
 #include "GraphFlower.h"
 #include "GraphSinus.h"
@@ -6,7 +8,9 @@
 
 //GraphBase* graph = new GraphSinus(); 
 //GraphBase* graph = new GraphFlower(); 
-GraphBase* graph = new GraphRadar(); 
+//GraphBase* graph = new GraphRadar(); 
+GraphBase* graph = new GraphSquares(); 
+
 
 void setup()
 {

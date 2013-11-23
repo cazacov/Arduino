@@ -76,16 +76,20 @@
     <ClInclude Include="GraphBase.h" />
     <ClInclude Include="GraphFlower.h" />
     <ClInclude Include="GraphSinus.h" />
+    <ClInclude Include="GraphSquares.h" />
     <ClInclude Include="OsciCanvas.h" />
     <ClInclude Include="GraphRadar.h" />
+    <ClInclude Include="OsciCanvasInt.h" />
     <ClInclude Include="Visual Micro\.Graphs.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphBase.cpp" />
     <ClCompile Include="GraphFlower.cpp" />
     <ClCompile Include="GraphSinus.cpp" />
+    <ClCompile Include="GraphSquares.cpp" />
     <ClCompile Include="OsciCanvas.cpp" />
     <ClCompile Include="GraphRadar.cpp" />
+    <ClCompile Include="OsciCanvasInt.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

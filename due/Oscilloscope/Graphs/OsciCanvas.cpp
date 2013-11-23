@@ -25,6 +25,8 @@ void OsciCanvas::point(float x, float y)
 	delayMicroseconds(DELAY);
 }
 
+// Generalized Bresenham's Line Drawing Algorithm
+// See http://www.cs.umd.edu/class/fall2003/cmsc427/bresenham.html 
 void OsciCanvas::line(float fx1, float fy1, float fx2, float fy2)
 {
 	int x1 = fx1 * scaleX + offsetX;
