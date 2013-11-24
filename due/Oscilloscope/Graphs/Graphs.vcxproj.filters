@@ -42,6 +42,9 @@
     <ClInclude Include="GraphSquares.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GraphStar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OsciCanvas.cpp">
@@ -63,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GraphSquares.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphStar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -17,7 +17,7 @@ void GraphFlower::draw()
 
 	for (double t = 0; t < max; t+=step)
 	{
-		double r = sin(6*t);
+		double r = sin(7*t);
 		Canvas.point(r * cos(t), r * sin(t));
 		//delay(5);
 	}

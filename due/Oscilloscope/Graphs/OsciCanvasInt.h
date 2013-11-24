@@ -12,11 +12,12 @@
 class OsciCanvasInt
 {
  private:
-	static const int delayTime = 10;
+	int delayPoint;
+	int delayLine;
  public:
 	static const int SizeX = 512;
 	static const int SizeY = 512;
-	void init();
+	void init(int delPoint = 10, int delLine = 0);
 	void point(int x, int y);
 	void line(int x1, int y1, int x2, int y2);
 };

@@ -5,9 +5,11 @@
 #include "OsciCanvasInt.h"
 #define sign(x) ((x > 0)? 1 : ((x < 0)? -1: 0))
 
-void OsciCanvasInt::init()
+void OsciCanvasInt::init(int delPoint, int delLine)
 {
 	analogWriteResolution(9);  // set the analog output resolution to 12 bit (512 levels)
+	delayPoint = delPoint;
+	delayLine = delLine;
 }
 
 void OsciCanvasInt::point(int x, int y)
@@ -22,7 +24,7 @@ void OsciCanvasInt::point(int x, int y)
 	}
 	analogWrite(DAC0, x); 
 	analogWrite(DAC1, y); 
-	delayMicroseconds(delayTime);
+	delayMicroseconds(delayPoint);
 }
 
 // Generalized Bresenham's Line Drawing Algorithm
@@ -62,6 +64,10 @@ void OsciCanvasInt::line(int x1, int y1, int x2, int y2)
 			y += s2;
 		} else {
 			x += s1;
+		}
+		if (delayLine)
+		{
+			delayMicroseconds(delayLine);
 		}
 	}	
 }
