@@ -13,11 +13,11 @@ void GraphFlower::init()
 void GraphFlower::draw()
 {
 	double max = PI * 2;
-	double step = 0.001;
+	double step = 0.002;
 
 	for (double t = 0; t < max; t+=step)
 	{
-		double r = sin(7*t);
+		double r = sin(5*t);
 		Canvas.point(r * cos(t), r * sin(t));
 		//delay(5);
 	}
