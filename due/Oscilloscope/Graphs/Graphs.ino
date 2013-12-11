@@ -1,7 +1,6 @@
 #include "GraphChristmasTree.h"
 #include "CodeInTheDark.h"
 #include "GraphText.h"
-#include "Anna.h"
 #include "GraphStar.h"
 #include "GraphSquares.h"
 #include "OsciCanvasInt.h"
@@ -28,7 +27,7 @@ int weights[] = { 15, 4, 3, 2, 2, 1};
 
 void setup()
 {
-	
+	randomSeed(analogRead(0));
 }
 
 
