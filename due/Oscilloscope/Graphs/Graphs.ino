@@ -1,5 +1,10 @@
-#include "GraphChristmasTree.h"
-#include "CodeInTheDark.h"
+#include "Graph2014.h"
+#include "GraphFireworks.h"
+#include "TextWriter.h"
+#include "GraphGutesNeues.h"
+#include "GraphSpiral.h"
+#include "GraphLissajousInt.h"
+#include "GraphLissajous.h"
 #include "GraphText.h"
 #include "GraphStar.h"
 #include "GraphSquares.h"
@@ -11,28 +16,37 @@
 #include "GraphText.h"
 #include "CodeInTheDark.h"
 #include "GraphChristmasTree.h"
+#include "GraphHallo.h"
 #include "OsciCanvas.h"
 
 
 GraphBase* graphs[] = {
-	new CodeInTheDark(),
+	new GraphFireworks(),
+	new Graph2014(),
+	new GraphGutesNeues(),
 	new GraphChristmasTree(),
-	new GraphSquares(),
-	new GraphRadar(),
+	new GraphLissajousInt(),
 	new GraphFlower(),
-	new GraphStar(),
+	new GraphHallo()
 };
 
-int weights[] = { 15, 4, 3, 2, 2, 1};
+int weights[] = { 15, 12, 10, 9, 8, 7, 6};
+
+//Graph2014 gh;
 
 void setup()
 {
+	Serial.begin(115200);
 	randomSeed(analogRead(0));
+//	gh.init();
 }
 
 
 void loop()
 {
+//	gh.draw();
+//	return;
+
 	int sum = 0;
 	for (int i = 0; i < sizeof(weights) / sizeof(weights[0]); i++)
 	{
@@ -55,7 +69,7 @@ void loop()
 
 	graph->init();
 
-	long stopTime = millis() + 15*1000;  // Max 20 seconds execution time
+	long stopTime = millis() + 12*1000;  // Max 12 seconds execution time
 
 	do {
 		graph->draw();
