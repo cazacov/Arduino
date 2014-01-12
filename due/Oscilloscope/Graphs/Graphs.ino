@@ -1,3 +1,4 @@
+#include "MathInt.h"
 #include "Graph2014.h"
 #include "GraphFireworks.h"
 #include "TextWriter.h"
@@ -30,22 +31,23 @@ GraphBase* graphs[] = {
 	new GraphHallo()
 };
 
-int weights[] = { 15, 12, 10, 9, 8, 7, 6};
+int weights[] = { 15, 12, 10, 9, 8, 7, 4};
 
-//Graph2014 gh;
+GraphLissajousInt gh;
 
 void setup()
 {
 	Serial.begin(115200);
+	MathInt.init();
 	randomSeed(analogRead(0));
-//	gh.init();
+	gh.init();
 }
 
 
 void loop()
 {
-//	gh.draw();
-//	return;
+	gh.draw();
+	return;
 
 	int sum = 0;
 	for (int i = 0; i < sizeof(weights) / sizeof(weights[0]); i++)

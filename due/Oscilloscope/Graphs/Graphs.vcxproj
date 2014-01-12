@@ -88,6 +88,7 @@
     <ClInclude Include="GraphSquares.h" />
     <ClInclude Include="GraphStar.h" />
     <ClInclude Include="GraphText.h" />
+    <ClInclude Include="MathInt.h" />
     <ClInclude Include="OsciCanvas.h" />
     <ClInclude Include="GraphRadar.h" />
     <ClInclude Include="OsciCanvasInt.h" />
@@ -110,6 +111,7 @@
     <ClCompile Include="GraphSquares.cpp" />
     <ClCompile Include="GraphStar.cpp" />
     <ClCompile Include="GraphText.cpp" />
+    <ClCompile Include="MathInt.cpp" />
     <ClCompile Include="OsciCanvas.cpp" />
     <ClCompile Include="GraphRadar.cpp" />
     <ClCompile Include="OsciCanvasInt.cpp" />
