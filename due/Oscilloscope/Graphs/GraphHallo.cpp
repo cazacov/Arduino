@@ -47,8 +47,8 @@ void GraphHallo::init()
 
 void GraphHallo::draw()
 {
-	int del = 2000;
-	for (int j = 0; j < 200; j++)
+	int del = 100;
+	for (int j = 0; j < 450; j++)
 	{
 		CanvasInt.init(1,del);
 		for (int i = 0; i < sizeof(hallo) / sizeof(hallo[0]); i++)

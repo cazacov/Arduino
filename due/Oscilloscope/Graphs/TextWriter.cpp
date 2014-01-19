@@ -11,6 +11,14 @@ void TextWriter::A(int x0, int y0)
 	drawLetter(x0, y0, a, sizeof(a)/sizeof(a[0]));
 }
 
+void TextWriter::B(int x0, int y0)
+{
+	unsigned int b[][4] = {{0,0, 0,4}, {0,4, 2,3}, {2,3, 0,2}, {0,2, 2,1}, {2,1, 0,0}};
+
+	drawLetter(x0, y0, b, sizeof(b)/sizeof(b[0]));
+}
+
+
 void TextWriter::E(int x0, int y0)
 {
 	unsigned int e[][4] = {{2,4, 0,4}, {0,2, 2,2}, {2,0, 0,0}, {0,0, 0,4}};
@@ -39,12 +47,28 @@ void TextWriter::J(int x0, int y0)
 
 	drawLetter(x0, y0, j, sizeof(j)/sizeof(j[0]));
 }
+
+void TextWriter::L(int x0, int y0)
+{
+	unsigned int l[][4] = {{0,4, 0,0}, {0,0, 2,0}};
+
+	drawLetter(x0, y0, l, sizeof(l)/sizeof(l[0]));
+}
+
 void TextWriter::N(int x0, int y0)
 {
 	unsigned int n[][4] = {{0,0, 0,4}, {0,4, 2,0}, {2,0, 2,4}};
 
 	drawLetter(x0, y0, n, sizeof(n)/sizeof(n[0]));
 }
+
+void TextWriter::O(int x0, int y0)
+{
+	unsigned int o[][4] = {{0,0, 0,4}, {0,4, 2,4}, {2,4, 2,0}, {2,0, 0, 0}};
+
+	drawLetter(x0, y0, o, sizeof(o)/sizeof(o[0]));
+}
+
 
 void TextWriter::R(int x0, int y0)
 {

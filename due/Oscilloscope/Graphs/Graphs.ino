@@ -1,3 +1,4 @@
+#include "GraphHelloHabr.h"
 #include "MathInt.h"
 #include "Graph2014.h"
 #include "GraphFireworks.h"
@@ -22,34 +23,40 @@
 
 
 GraphBase* graphs[] = {
-	new GraphFireworks(),
-	new Graph2014(),
+	new GraphHallo(),
+	new GraphFlower(),
+	new GraphSquares(),
+	new GraphLissajousInt(),
 	new GraphGutesNeues(),
 	new GraphChristmasTree(),
-	new GraphLissajousInt(),
-	new GraphFlower(),
-	new GraphHallo()
+	new GraphSpiral(),
+	new Graph2014(),
+	new GraphFireworks(),
+	new GraphFireworks()
 };
 
 int weights[] = { 15, 12, 10, 9, 8, 7, 4};
 
-GraphLissajousInt gh;
+//GraphHelloHabr gh;
 
 void setup()
 {
 	Serial.begin(115200);
 	MathInt.init();
 	randomSeed(analogRead(0));
-	gh.init();
+	//gh.init();
 }
 
+int graphIndex = 0;
 
 void loop()
 {
-	gh.draw();
-	return;
+	//gh.draw();
+	//return;
 
-	int sum = 0;
+	GraphBase* graph;
+
+	/*int sum = 0;
 	for (int i = 0; i < sizeof(weights) / sizeof(weights[0]); i++)
 	{
 		sum += weights[i];
@@ -57,7 +64,7 @@ void loop()
 
 	int r = random(sum);
 
-	GraphBase* graph;
+	
 	sum = 0;
 	for (int i = 0; i < sizeof(weights) / sizeof(weights[0]); i++)
 	{
@@ -68,14 +75,17 @@ void loop()
 			break;
 		}
 	}
-
+*/
+	graph = graphs[graphIndex];
 	graph->init();
 
-	long stopTime = millis() + 12*1000;  // Max 12 seconds execution time
+	long stopTime = millis() + 10*1000;  // Max 10 seconds execution time
 
 	do {
 		graph->draw();
 	}
 	while (millis() < stopTime);
+	graphIndex++;
+	graphIndex %= 10;
 }
 

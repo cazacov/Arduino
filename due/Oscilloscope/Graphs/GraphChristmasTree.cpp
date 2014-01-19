@@ -34,7 +34,7 @@ int christmasTree[][2] =
 
 void GraphChristmasTree::init()
 {
-	CanvasInt.init(1,2000);
+	CanvasInt.init(1,1500);
 }
 
 void GraphChristmasTree::draw()
