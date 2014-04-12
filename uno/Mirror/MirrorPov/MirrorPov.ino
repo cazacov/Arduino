@@ -15,7 +15,6 @@ char* message = "  HELLO WORLD";
 void setup()
 {
 	Serial.begin(57600);
-
 	Serial.println("Initializing...");
 	mirrorController = new MirrorController();
 	mirrorController->init();

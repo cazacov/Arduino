@@ -59,11 +59,11 @@ long MirrorController::calculateRotationSpeed()
 long MirrorController::waitForBeginMark()
 {
 	long result;
-	while (!digitalRead(PHOTO_PIN))
+	while (!(PIND & 0x20))
 	{
 		// do nothing
 	};
-	while (digitalRead(PHOTO_PIN))
+	while (PIND & 0x20)
 	{
 		result = micros();
 	};
