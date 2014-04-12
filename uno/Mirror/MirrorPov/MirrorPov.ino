@@ -1,10 +1,10 @@
 #include "Fonts.h"
 #include "Laser.h"
 #include <Arduino.h>
-#include <Servo.h>
 #include <avr/pgmspace.h>
 #include "MirrorController.h"
 #include "Laser.h"
+#include <Servo.h>
 
 MirrorController* mirrorController;
 Laser* laser;
@@ -66,7 +66,7 @@ void loop()
 	long prevStart = mirrorController->waitForBeginMark();
 	delayMicroseconds(cycleTimeMs << 1);
 
-	int pixels = strlen("  Hello World") * 8;
+	int pixels = strlen("  HELLO WORLD") * 8;
 
 	do {
 		long start = mirrorController->waitForBeginMark();
@@ -130,29 +130,3 @@ void loop()
 	} while (1);
 }
 
-void calibrate(void)
-{
-	laser->On();
-	delayMicroseconds(5);
-	laser->Off();
-	delayMicroseconds(500);
-	laser->On();
-	delayMicroseconds(5);
-	laser->Off();
-	delayMicroseconds(500);
-	laser->On();
-	delayMicroseconds(5);
-	laser->Off();
-	delayMicroseconds(500);
-	laser->On();
-	delayMicroseconds(5);
-	laser->Off();
-	delayMicroseconds(500);
-	laser->On();
-	delayMicroseconds(5);
-	laser->Off();
-	delayMicroseconds(500);
-	laser->On();
-	delayMicroseconds(5);
-	laser->Off();
-}

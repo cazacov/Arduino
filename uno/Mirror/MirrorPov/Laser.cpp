@@ -1,7 +1,7 @@
 #include "Laser.h"
 #include <Arduino.h>
 
-#define LASER_PIN	12
+#define LASER_PIN	2
 
 void Laser::init()
 {

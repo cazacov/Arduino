@@ -1,10 +1,11 @@
 #include "MirrorController.h"
 #include "Arduino.h"
 
-#define MOTOR_PIN 9		//	Control wire of brushless motor ESC attached to digital pin 9
+
+#define MOTOR_PIN 10		//	Control wire of brushless motor ESC attached to digital pin 10
 #define PHOTO_PIN 5		//	Photo transistor on analog pin 0
-#define SPEED_MAX 56
-#define SPEED_NORMAL 52
+#define SPEED_MAX 60
+#define SPEED_NORMAL 55
 
 void MirrorController::init()
 {

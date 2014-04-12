@@ -34,7 +34,7 @@ prog_uchar font5x8[130] PROGMEM = {
 	// J
 	0, 0, 0, 0, 0,
 	// K
-	0, 0, 0, 0, 0,
+	0xCC, 0xD8, 0xF0, 0xD8, 0xCC,
 	// L
 	0xC0, 0xC0, 0xC0, 0xC0, 0xFC,
 	// M
@@ -54,7 +54,7 @@ prog_uchar font5x8[130] PROGMEM = {
 	// T
 	0, 0, 0, 0, 0,
 	// U
-	0, 0, 0, 0, 0,
+	0xCC, 0xCC, 0xCC, 0xCC, 0x78,
 	// V
 	0, 0, 0, 0, 0,
 	// W
@@ -64,7 +64,7 @@ prog_uchar font5x8[130] PROGMEM = {
 	// Y
 	0, 0, 0, 0, 0,
 	// Z
-	0, 0, 0, 0, 0
+	0xF8, 0x10, 0x20, 0x40, 0xF8
 };
 
 void Fonts::init()
