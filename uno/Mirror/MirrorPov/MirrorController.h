@@ -8,16 +8,17 @@
 #else
 	#include "WProgram.h"
 #endif
-#include <Servo.h>
+#include <PWMServo.h>
 
 class MirrorController
 {
  private:
-	Servo* hddMotor;
+	 PWMServo* hddMotor;
  public:
 	void init();
 	void start();
 	long waitForBeginMark();
+	void waitForBeginMarkFast();
 	long calculateRotationSpeed();
 };
 #endif

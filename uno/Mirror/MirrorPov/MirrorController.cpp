@@ -9,7 +9,7 @@
 
 void MirrorController::init()
 {
-	hddMotor = new Servo();
+	hddMotor = new PWMServo();
 	hddMotor->attach(MOTOR_PIN);
 	pinMode(PHOTO_PIN, INPUT);
 }
@@ -59,15 +59,28 @@ long MirrorController::calculateRotationSpeed()
 long MirrorController::waitForBeginMark()
 {
 	long result;
+	while (PIND & 0x20)
+	{
+		// do nothing
+	};
+	while (!(PIND & 0x20))
+	{
+		result = micros();
+	};
+	
+	return result;
+}
+
+void MirrorController::waitForBeginMarkFast()
+{
+	while (PIND & 0x20)
+	{
+		// do nothing
+	};
 	while (!(PIND & 0x20))
 	{
 		// do nothing
 	};
-	while (PIND & 0x20)
-	{
-		result = micros();
-	};
-	return result;
 }
 
 

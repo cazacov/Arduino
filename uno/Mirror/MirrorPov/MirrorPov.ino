@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <avr/pgmspace.h>
 #include "MirrorController.h"
-#include <Servo.h>
+#include <PWMServo.h> 
 
 #define LASER_PIN 2
 
@@ -23,7 +23,7 @@ void setup()
 	digitalWrite(LASER_PIN, HIGH);
 }
 
-int correction[9] = { -35, -15, -25, -5, 0, 62, -5, -10 };
+int correction[9] = { -0, -0, -0, -0, 0, 0, -0, -0 };
 int lineOrder[8] = { 0, 7, 3, 4, 1, 6, 2, 5 };
 
 
@@ -74,14 +74,15 @@ void loop()
 	int pixels = strlen(message) * 8;
 
 	do {
-		long start = mirrorController->waitForBeginMark();
+		mirrorController->waitForBeginMarkFast();
+		long start = micros();
 		long t = start + t0;
 		long lastCorrection = 0;
 		t += correction[0];
 
-		for (int i = 1; i <= 8; i++)
+		for (int i = 0; i <= 7; i++)
 		{
-			int lineNr = lineOrder[i - 1];
+			int lineNr = lineOrder[i];
 			unsigned char* ptr = pbuf[4 - lineNr];
 			unsigned char bitMask = 0x80;
 			char isOn = 1;
@@ -116,7 +117,7 @@ void loop()
 				t += pixelTime;
 			}
 			digitalWrite(LASER_PIN, LOW);
-			int nextCorrection = correction[lineOrder[i]];
+			int nextCorrection = correction[lineOrder[i+1]];
 			t += lineTime - pixels * pixelTime - lastCorrection + nextCorrection;
 			lastCorrection = nextCorrection;
 		}
