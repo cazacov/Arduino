@@ -13,8 +13,7 @@
 MirrorController* mirrorController;
 char buf[20];
 
-//char* message = "  XXXXX XXXXX";
-  char* message = "HELLO WORLD ";
+char* message = "  IIIII IIIII";
 
 void setup()
 {
@@ -27,7 +26,7 @@ void setup()
 	digitalWrite(LASER_PIN, HIGH);
 }
 
-int correction[8] = { 17, 10, 0, 20, 45, 0, 0, -0 };
+int correction[8] = { 20, 10, 0, 30, 60, 0, 0, -0 };
 int lineOrder[8] = { 0, 7, 3, 4, 1, 6, 2, 5 };
 
 
@@ -44,15 +43,9 @@ void loop()
 	}
 
 	byte ct[8];
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 9; i++)
 	{
-		for (int j = 0; j < 8; j++)
-		{
-			if (lineOrder[j] == i)
-			{
-				ct[j] = correction[i];
-			}
-		}
+		ct[lineOrder[i]] = correction[i];
 	}
 	for (int i = 0; i < 8; i++)
 	{
@@ -71,7 +64,7 @@ void loop()
 	sprintf(buf, "Cycle time: %ld", cycleTimeMs);
 	Serial.println(buf);
 
-	long t0 = 170;
+	long t0 = 150;
 	long lineTime = cycleTimeMs >> 3;
 	long pixelTime = lineTime >> 7;
 	sprintf(buf, "Pixel time: %ld", pixelTime);
@@ -81,7 +74,6 @@ void loop()
 	delayMicroseconds(cycleTimeMs << 1);
 
 	int pixels = strlen(message) * 8;
-	int onTime = (pixelTime >> 1) + 1;
 
 	long startTimes[8];
 
@@ -108,17 +100,16 @@ void loop()
 			int lineNr = lineOrder[i];
 			unsigned char* ptr = pbuf[4 - lineNr];
 			unsigned char bitMask = 0x80;
-			unsigned char info = *ptr;
 
-			if (lineNr < 5)
+			for (int p = 0; p < pixels; p++)
 			{
-				for (int p = 0; p < pixels; p++)
+				while (micros() < t)
 				{
-					while (micros() < t)
-					{
-						// do nothing;
-					}
-					if (info & bitMask)
+					// do nothing;
+				}
+				if (lineNr < 5)
+				{
+					if ((*ptr) & bitMask)
 					{
 						digitalWrite(LASER_PIN, HIGH);
 					}
@@ -130,12 +121,14 @@ void loop()
 					if (bitMask == 0)
 					{
 						ptr++;
-						info = *ptr;
 						bitMask = 0x80;
-						t += pixelTime;
 					}
-					t += pixelTime;
 				}
+				else
+				{
+					digitalWrite(LASER_PIN, LOW);
+				}
+				t += pixelTime;
 			}
 			digitalWrite(LASER_PIN, LOW);
 			sptr++;
@@ -143,7 +136,6 @@ void loop()
 		}
 		lineTime = (start - prevStart) >> 3;
 		pixelTime = lineTime >> 7;
-		onTime = (pixelTime * 3) >> 2;
 		prevStart = start;
 	} while (1);
 }
