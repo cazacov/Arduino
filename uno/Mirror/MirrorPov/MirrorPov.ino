@@ -1,5 +1,12 @@
+/*
+
+
+*/
+
 // Third party libraries:
-// 
+// PWMServo - controls a servo motor (in this case ESC) attached to PWM pin without using interrupts.
+// http://arduiniana.org/libraries/pwmservo/// 
+// Unpack it into Libraries folder of your Arduino IDE installation.
 
 #include "Fonts.h"
 #include "Laser.h"
@@ -13,8 +20,7 @@
 MirrorController* mirrorController;
 char buf[20];
 
-//char* message = "  XXXXX XXXXX";
-  char* message = "HELLO WORLD ";
+char* message = "HELLO WORLD ";
 
 void setup()
 {
@@ -27,8 +33,8 @@ void setup()
 	digitalWrite(LASER_PIN, HIGH);
 }
 
-int correction[8] = { 17, 10, 0, 20, 45, 0, 0, -0 };
-int lineOrder[8] = { 0, 7, 3, 4, 1, 6, 2, 5 };
+int correction[8] = { 17, 10, 0, 20, 45, 0, 0, -0 };  // time offset in microseconds to compensate non-ideal shape of mirrors
+int lineOrder[8] = { 0, 7, 3, 4, 1, 6, 2, 5 };		// for better balance mirroring faces are not placed in strict incremental order		
 
 
 void loop()
@@ -43,6 +49,7 @@ void loop()
 		FONTS.getLine(message, i, pbuf[i]);
 	}
 
+	// re-arrange correction time offesets in the order of mirror faces
 	byte ct[8];
 	for (int i = 0; i < 8; i++)
 	{
@@ -72,17 +79,16 @@ void loop()
 	Serial.println(buf);
 
 	long t0 = 170;
-	long lineTime = cycleTimeMs >> 3;
-	long pixelTime = lineTime >> 7;
+	long lineTime = cycleTimeMs >> 3;	// time in microseconds to draw one line
+	long pixelTime = lineTime >> 7;		// time in microseconds to draw one pixel
 	sprintf(buf, "Pixel time: %ld", pixelTime);
 	Serial.println(buf);
 
-	long prevStart = mirrorController->waitForBeginMark();
+	mirrorController->waitForBeginMarkFast();
+	long prevStart = micros();
 	delayMicroseconds(cycleTimeMs << 1);
 
 	int pixels = strlen(message) * 8;
-	int onTime = (pixelTime >> 1) + 1;
-
 	long startTimes[8];
 
 	do {
@@ -101,7 +107,7 @@ void loop()
 		}
 		
 		sptr = startTimes;
-		long t = *sptr;
+		long t = *sptr;  // time in microseconds when to start drawing next pixel
 
 		for (int i = 0; i < 8; i++)
 		{
@@ -143,7 +149,6 @@ void loop()
 		}
 		lineTime = (start - prevStart) >> 3;
 		pixelTime = lineTime >> 7;
-		onTime = (pixelTime * 3) >> 2;
 		prevStart = start;
 	} while (1);
 }

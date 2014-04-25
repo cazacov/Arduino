@@ -2,6 +2,12 @@
 *  This code is in the public domain.
 *  (Do whatever you want with it.)
 */
+
+/*
+  Tests controlling HDD motor speed using ESC 
+  ESC model: Mystery Cloud Brushless Regler 10A BEC ESC RC Speed Controller on pin 9
+  Laser LED on pin 12
+*/
 #define LASER 12
 #define MOTOR 9
 
@@ -43,6 +49,8 @@ void loop()
     Serial.println(i);
     delay(50);
    }
+   
+  // show dashes
   while(1)
   {
     digitalWrite(LASER, HIGH);

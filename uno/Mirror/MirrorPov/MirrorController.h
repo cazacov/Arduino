@@ -17,7 +17,7 @@ class MirrorController
  public:
 	void init();
 	void start();
-	long waitForBeginMark();
+	//long waitForBeginMark();
 	void waitForBeginMarkFast();
 	long calculateRotationSpeed();
 };

@@ -44,32 +44,33 @@ long MirrorController::calculateRotationSpeed()
 	long stopTime;
 	for (int i = 0; i < 20; i++)
 	{
-		while (!digitalRead(PHOTO_PIN))
-		{
-			// do nothing
-		};
-		while (digitalRead(PHOTO_PIN))
-		{
-			stopTime = micros();
-		};
+		waitForBeginMarkFast();
+		//while (!digitalRead(PHOTO_PIN))
+		//{
+		//	// do nothing
+		//};
+		//while (digitalRead(PHOTO_PIN))
+		//{
+		//	stopTime = micros();
+		//};
 	}
 	return (stopTime - startTime) / 20;
 }
 
-long MirrorController::waitForBeginMark()
-{
-	long result;
-	while (PIND & 0x20)
-	{
-		// do nothing
-	};
-	while (!(PIND & 0x20))
-	{
-		result = micros();
-	};
-	
-	return result;
-}
+//long MirrorController::waitForBeginMark()
+//{
+//	long result;
+//	while (PIND & 0x20)
+//	{
+//		// do nothing
+//	};
+//	while (!(PIND & 0x20))
+//	{
+//		result = micros();
+//	};
+//	
+//	return result;
+//}
 
 void MirrorController::waitForBeginMarkFast()
 {
