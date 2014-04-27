@@ -3,7 +3,7 @@
 ## Pianist ##
 Pianist is a robot playing piano built from the old inkjet printer.
 
-<img src="blob/master/_img/pianist.jpg?raw=true" alt="Robot playing piano" width="600" height="400"/>
+<img src="_img/pianist.jpg?raw=true" alt="Robot playing piano" width="600" height="400"/>
 
 Here is the old inkjet printer HP 1220 that I got donated from a friend:
 <img src="https://github.com/cazacov/Arduino/blob/master/_img/deskjet1200c.jpg?raw=true" alt="Robot playing piano" width="600" height="400"/>
