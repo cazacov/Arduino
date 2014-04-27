@@ -4,6 +4,7 @@
 *.sdf
 *.vmps.xml
 *.vsarduino.h
+*.dku
 
 # User-specific files
 *.suo
