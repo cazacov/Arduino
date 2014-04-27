@@ -7,8 +7,8 @@ class SongBook
     SongBook();
     char* HappyBirthday;
     char* KeyboardTest;
-    char* FuerElise;
     char* AlleMeineEntchen;
+    char* FuerElise;
 };
 
 extern SongBook MySongBook;

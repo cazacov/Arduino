@@ -65,7 +65,7 @@ void loop()
   car.calibrate();
   
   Melody melody;
-  melody.init(MySongBook.AlleMeineEntchen, 0);
+  melody.init(MySongBook.FuerElise, 0);
                 
   char b[30];
   

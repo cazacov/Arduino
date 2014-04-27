@@ -8,7 +8,7 @@ HandDriver::HandDriver()
   servoPositions[1] = {800,1400,2000};
   servoPositions[2] = {800,1450,2000};  
   servoPositions[3] = {800,1380,2000};
-  servoPositions[4] = {800,1500,2200};  
+  servoPositions[4] = {800,1500,2100};  
   
   for (unsigned char i = 0; i < SERVOCOUNT; i++)
   {

@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="oscilloscope_en.svg"
-   inkscape:export-filename="C:\Temporary\Osc\osc.png"
+   inkscape:export-filename="C:\Temporary\Osc\osc_en.png"
    inkscape:export-xdpi="400.03583"
    inkscape:export-ydpi="400.03583">
   <defs
@@ -91,7 +91,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.8683167"
      inkscape:cx="529.85388"
-     inkscape:cy="316.95365"
+     inkscape:cy="409.08593"
      inkscape:current-layer="layer1"
      id="namedview3064"
      showgrid="true"
@@ -100,9 +100,9 @@
      inkscape:snap-to-guides="true"
      inkscape:window-width="1920"
      inkscape:window-height="1018"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1">
+     inkscape:window-x="-32000"
+     inkscape:window-y="-32000"
+     inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
        id="grid3069"
