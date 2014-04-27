@@ -60,9 +60,11 @@ prog_uchar font5x8[130] PROGMEM = {
 	0xF8, 0x10, 0x20, 0x40, 0xF8
 };
 
+
+
 void Fonts::init()
 {
-	
+
 
 }
 
@@ -72,15 +74,15 @@ void Fonts::getLine(char* text, int lineNr, unsigned char* cbuf)
 
 	for (int i = 0; i < len; i++)
 	{
-                if (text[i] == ' ')
-                {
-                  cbuf[i] = 0;
-                }
-                 else {
-		int addr = (text[i] - 'A') * 5 + lineNr;
-		unsigned char pbyte = pgm_read_byte_near(font5x8 + addr);
-		cbuf[i] = pbyte;  
-                }
+		if (text[i] == ' ')
+		{
+			cbuf[i] = 0;
+		}
+		else {
+			int addr = (text[i] - 'A') * 5 + lineNr;
+			unsigned char pbyte = pgm_read_byte_near(font5x8 + addr);
+			cbuf[i] = pbyte;
+		}
 	}
 }
 Fonts FONTS;

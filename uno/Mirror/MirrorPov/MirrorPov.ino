@@ -1,6 +1,9 @@
 /*
+	Laser projector made from an old hard disk drive
 
-
+	Author: Victor Cazacov
+	License: MIT License
+	
 */
 
 // Third party libraries:
@@ -20,7 +23,7 @@
 MirrorController* mirrorController;
 char buf[20];
 
-char* message = "HELLO WORLD ";
+char* message = " HELLO WORLD ";
 
 void setup()
 {
