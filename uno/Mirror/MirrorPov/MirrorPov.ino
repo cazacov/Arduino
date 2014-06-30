@@ -23,7 +23,7 @@
 MirrorController* mirrorController;
 char buf[20];
 
-char* message = " HELLO WORLD ";
+char message[21];
 
 void setup()
 {
@@ -39,6 +39,22 @@ void setup()
 int correction[8] = { 17, 10, 0, 20, 45, 0, 0, -0 };  // time offset in microseconds to compensate non-ideal shape of mirrors
 int lineOrder[8] = { 0, 7, 3, 4, 1, 6, 2, 5 };		// for better balance mirroring faces are not placed in strict incremental order		
 
+void setMessage(char* msg, unsigned char pixelBuffer[5][20])
+{
+    strncpy(message, msg, 12);
+    message[12] = '\0';
+    
+    // pad with spaces to 12 characters
+    for (int i = strlen(message); i < 12; i++)
+    {
+      message[i] = ' ';
+    }
+    for (int i = 0; i < 5; i++)
+    {
+      FONTS.getLine(message, i, pixelBuffer[i]);
+    }
+}
+
 
 void loop()
 {
@@ -47,10 +63,10 @@ void loop()
 
 	unsigned char pbuf[5][20];
 
-	for (int i = 0; i < 5; i++)
-	{
-		FONTS.getLine(message, i, pbuf[i]);
-	}
+        setMessage(" HELLO WORLD", pbuf);
+        Serial.print(message);
+        Serial.println("]");
+        
 
 	// re-arrange correction time offesets in the order of mirror faces
 	byte ct[8];
@@ -81,7 +97,7 @@ void loop()
 	sprintf(buf, "Cycle time: %ld", cycleTimeMs);
 	Serial.println(buf);
 
-	long t0 = 170;
+	long t0 = 150;
 	long lineTime = cycleTimeMs >> 3;	// time in microseconds to draw one line
 	long pixelTime = lineTime >> 7;		// time in microseconds to draw one pixel
 	sprintf(buf, "Pixel time: %ld", pixelTime);
@@ -91,10 +107,10 @@ void loop()
 	long prevStart = micros();
 	delayMicroseconds(cycleTimeMs << 1);
 
-	int pixels = strlen(message) * 8;
 	long startTimes[8];
-
+        int msgLen = strlen(message);
 	do {
+          int pixels =  msgLen << 3;
 		mirrorController->waitForBeginMarkFast();
 		long start = micros();
 		long* sptr = startTimes;
@@ -153,6 +169,39 @@ void loop()
 		lineTime = (start - prevStart) >> 3;
 		pixelTime = lineTime >> 7;
 		prevStart = start;
+
+                bool refreshFlag = false;
+                
+                while (Serial.available())
+                {
+                  int ch = Serial.read();
+                  if (ch >= 32)    // printable character
+                  {
+                    refreshFlag = true;                    
+                    char* rp = message + 1;
+                    char* wp = message;
+                    for(int i = 0; i < 11; i++)
+                    {
+                      *wp = *rp;
+                      wp++;
+                      rp++;
+                    }
+                    message[11] = ch;
+                  }
+                 }
+                 if (refreshFlag)
+                 {
+                    Serial.print(message);
+                    Serial.println("]");
+                    for (int i = 0; i < 5; i++)
+                    {
+                      FONTS.getLine(message, i, pbuf[i]);
+                    }
+
+                 }
+                  
+
 	} while (1);
 }
+
 
