@@ -4,8 +4,8 @@
 
 #define MOTOR_PIN 10		//	Control wire of brushless motor ESC attached to digital pin 10
 #define PHOTO_PIN 5		//	Photo transistor on analog pin 0
-#define SPEED_MAX 57
-#define SPEED_NORMAL 45
+#define SPEED_MAX 58
+#define SPEED_NORMAL 50
 
 void MirrorController::init()
 {

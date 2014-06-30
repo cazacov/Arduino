@@ -3,7 +3,7 @@
 
 	Author: Victor Cazacov
 	License: MIT License
-	
+
 */
 
 // Third party libraries:
@@ -19,11 +19,16 @@
 #include <PWMServo.h> 
 
 #define LASER_PIN 2
+#define LINE_LENGTH 12
 
 MirrorController* mirrorController;
 char buf[20];
 
 char message[21];
+
+// forward declarations
+void setMessage(char* msg, unsigned char pixelBuffer[5][20]);
+bool readSerial();
 
 void setup()
 {
@@ -39,23 +44,6 @@ void setup()
 int correction[8] = { 17, 10, 0, 20, 45, 0, 0, -0 };  // time offset in microseconds to compensate non-ideal shape of mirrors
 int lineOrder[8] = { 0, 7, 3, 4, 1, 6, 2, 5 };		// for better balance mirroring faces are not placed in strict incremental order		
 
-void setMessage(char* msg, unsigned char pixelBuffer[5][20])
-{
-    strncpy(message, msg, 12);
-    message[12] = '\0';
-    
-    // pad with spaces to 12 characters
-    for (int i = strlen(message); i < 12; i++)
-    {
-      message[i] = ' ';
-    }
-    for (int i = 0; i < 5; i++)
-    {
-      FONTS.getLine(message, i, pixelBuffer[i]);
-    }
-}
-
-
 void loop()
 {
 	delay(500);
@@ -63,10 +51,7 @@ void loop()
 
 	unsigned char pbuf[5][20];
 
-        setMessage(" HELLO WORLD", pbuf);
-        Serial.print(message);
-        Serial.println("]");
-        
+	setMessage(" HELLO WORLD", pbuf);
 
 	// re-arrange correction time offesets in the order of mirror faces
 	byte ct[8];
@@ -108,15 +93,15 @@ void loop()
 	delayMicroseconds(cycleTimeMs << 1);
 
 	long startTimes[8];
-        int msgLen = strlen(message);
+	int msgLen = strlen(message);
 	do {
-          int pixels =  msgLen << 3;
+		int pixels = msgLen << 3;
 		mirrorController->waitForBeginMarkFast();
 		long start = micros();
 		long* sptr = startTimes;
 		int* cptr = correction;
 		long val = start + t0;
-		
+
 		for (int i = 0; i < 8; i++)
 		{
 			*sptr = val + (*cptr);
@@ -124,7 +109,7 @@ void loop()
 			cptr++;
 			val += lineTime;
 		}
-		
+
 		sptr = startTimes;
 		long t = *sptr;  // time in microseconds when to start drawing next pixel
 
@@ -170,38 +155,56 @@ void loop()
 		pixelTime = lineTime >> 7;
 		prevStart = start;
 
-                bool refreshFlag = false;
-                
-                while (Serial.available())
-                {
-                  int ch = Serial.read();
-                  if (ch >= 32)    // printable character
-                  {
-                    refreshFlag = true;                    
-                    char* rp = message + 1;
-                    char* wp = message;
-                    for(int i = 0; i < 11; i++)
-                    {
-                      *wp = *rp;
-                      wp++;
-                      rp++;
-                    }
-                    message[11] = ch;
-                  }
-                 }
-                 if (refreshFlag)
-                 {
-                    Serial.print(message);
-                    Serial.println("]");
-                    for (int i = 0; i < 5; i++)
-                    {
-                      FONTS.getLine(message, i, pbuf[i]);
-                    }
-
-                 }
-                  
-
+		bool refreshFlag = readSerial();
+		if (refreshFlag)
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				FONTS.getLine(message, i, pbuf[i]);
+			}
+		}
 	} while (1);
 }
 
+//
+// Helper functions
+//
+void setMessage(char* msg, unsigned char pixelBuffer[5][20])
+{
+	strncpy(message, msg, LINE_LENGTH);
+	message[LINE_LENGTH] = '\0';
+
+	// pad with spaces to 12 characters
+	for (int i = strlen(message); i < LINE_LENGTH; i++)
+	{
+		message[i] = ' ';
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		FONTS.getLine(message, i, pixelBuffer[i]);
+	}
+}
+
+bool readSerial()
+{
+	bool result = false;
+	while (Serial.available())
+	{
+		int ch = Serial.read();
+		if (ch >= 32)    // printable character
+		{
+			result = true;
+			char* rp = message + 1;
+			char* wp = message;
+			for (int i = 0; i < LINE_LENGTH - 1; i++)
+			{
+				*wp = *rp;
+				wp++;
+				rp++;
+			}
+			message[LINE_LENGTH - 1] = ch;
+		}
+	}
+	return result;
+}
 
